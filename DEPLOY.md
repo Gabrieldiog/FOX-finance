@@ -29,5 +29,6 @@ O código já usa `prepare: false` + `max: 1`, que é o que o pooler transaction
 
 ## Pendências conscientes (pós-lançamento)
 
-- Verificação de e-mail (Resend) e rate limit de login mais apertado.
+- Verificação de e-mail (Resend).
 - RLS no Postgres como 2ª camada (hoje o isolamento é aplicacional e coberto por teste).
+- Considerar o firewall da Vercel (Attack Challenge Mode) se aparecer flood de verdade.

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, index, integer, bigint } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -72,6 +72,25 @@ export const verification = pgTable(
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
+
+// Janela de rate limit do Better Auth persistida no banco: na Vercel cada request
+// pode cair numa instância nova, então contador em memória não segura nada.
+export const rateLimit = pgTable("rate_limit", {
+  id: text("id").primaryKey(),
+  key: text("key").unique(),
+  count: integer("count"),
+  lastRequest: bigint("last_request", { mode: "number" }),
+});
+
+// Erros de senha por conta. Diferente do rate limit (que é por IP), isso trava a
+// CONTA: 5 erros seguidos bloqueiam o login por 10 minutos, mesmo que o ataque
+// venha distribuído de vários IPs.
+export const loginAttempt = pgTable("login_attempt", {
+  email: text("email").primaryKey(),
+  failures: integer("failures").default(0).notNull(),
+  lockedUntil: timestamp("locked_until"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),

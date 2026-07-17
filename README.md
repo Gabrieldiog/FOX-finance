@@ -4,7 +4,7 @@ Gestão financeira pessoal. Anotar um gasto ou um ganho tem que ser mais rápido
 
 Projeto de portfólio com uso real — poucas contas, cada pessoa com o próprio dinheiro, dados privados de gente de verdade. Por isso a segurança aqui não é enfeite: é requisito.
 
-**Ao vivo:** em breve (em construção).
+**Ao vivo:** [fox-finance.vercel.app](https://fox-finance.vercel.app)
 
 ## O que faz
 
@@ -16,6 +16,10 @@ Projeto de portfólio com uso real — poucas contas, cada pessoa com o próprio
 
 - **Autenticação madura, não caseira.** Sessão guardada no banco (revogável), senha com Argon2id; cadastro aberto, com cada conta totalmente isolada das outras.
 - **Isolamento por usuário.** Todo dado é lido pelo `user_id` da sessão, nunca por um id vindo do cliente — e um teste prova que uma conta não alcança a da outra.
+- **Trava de força bruta.** 5 senhas erradas seguidas bloqueiam o login da conta por 10 minutos — mesmo que o ataque venha distribuído de vários IPs. Coberto por teste de integração.
+- **Senha fácil não entra.** O cadastro barra as senhas mais vazadas do mundo (dicionário com reforço BR), sequências de teclado e senhas parecidas com o próprio e-mail — com o motivo explicado na tela.
+- **Robô não passa do formulário.** Honeypot nos formulários de entrar/criar conta, e rate limit por IP persistido no banco (janela sobrevive ao serverless da Vercel), mais apertado nos endpoints de auth.
+- **SQL injection não morde.** Toda consulta é parametrizada pelo ORM — e um teste tenta injetar `DROP TABLE` de verdade pra provar que vira texto inofensivo.
 - **Dinheiro em centavos inteiros**, validação sempre no servidor, segredos fora do código.
 - **LGPD proporcional.** Coleta mínima (só o necessário), com exportar e excluir a conta de verdade.
 
@@ -39,4 +43,4 @@ Health check em `GET /api/health`.
 
 ## Status
 
-Em construção, backend antes do frontend. Já de pé: o esqueleto, a validação de ambiente, o health check, a **autenticação**, o **isolamento de dados por usuário** (com testes provando que uma conta não vê a da outra), e agora o **lançamento** (tela "valor primeiro") o **resumo** da semana/mês — "Sobrou/Faltou", com o quanto entrou, saiu e para onde foi —, **editar e excluir** lançamentos (com a lista dos últimos no dashboard), **LGPD** — exportar seus dados em JSON e excluir a conta de verdade (com política curta) —, um **PWA instalável** (vai pra tela inicial do celular como app), e agora o **visual profissional**: a identidade Fox (grafite quente + âmbar, tipografia Fraunces + Hanken Grotesk), tema claro e escuro, e as animações — o saldo sobe contando ao abrir. **Pronto pra publicar** — o passo a passo está no [DEPLOY.md](DEPLOY.md).
+Em construção, backend antes do frontend. Já de pé: o esqueleto, a validação de ambiente, o health check, a **autenticação**, o **isolamento de dados por usuário** (com testes provando que uma conta não vê a da outra), e agora o **lançamento** (tela "valor primeiro") o **resumo** da semana/mês — "Sobrou/Faltou", com o quanto entrou, saiu e para onde foi —, **editar e excluir** lançamentos (com a lista dos últimos no dashboard), **LGPD** — exportar seus dados em JSON e excluir a conta de verdade (com política curta) —, um **PWA instalável** (vai pra tela inicial do celular como app), o **visual profissional** com tema claro e escuro e animações — o saldo sobe contando ao abrir —, e agora o **endurecimento de segurança**: trava de força bruta, dicionário de senhas fáceis, honeypot e rate limit persistido no banco. **No ar** — o passo a passo de deploy está no [DEPLOY.md](DEPLOY.md).
