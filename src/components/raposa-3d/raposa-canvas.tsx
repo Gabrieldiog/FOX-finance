@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { FoxMascote } from "@/components/fox-mascote";
+import { FoxMascote, type Emocao } from "@/components/fox-mascote";
 
 // O <Canvas> usa WebGL/window — só no cliente, nunca no servidor.
 const RaposaCena = dynamic(() => import("./raposa-cena"), { ssr: false });
@@ -16,7 +16,15 @@ function temWebGL() {
   }
 }
 
-export function RaposaCanvas({ size = 320 }: { size?: number }) {
+export function RaposaCanvas({
+  size = 320,
+  emocao = "neutro",
+  seguirMouse = true,
+}: {
+  size?: number;
+  emocao?: Emocao;
+  seguirMouse?: boolean;
+}) {
   // Só renderiza o 3D depois de montar (evita mismatch de hidratação) e se houver WebGL.
   const [ok, setOk] = useState(false);
   useEffect(() => {
@@ -25,12 +33,12 @@ export function RaposaCanvas({ size = 320 }: { size?: number }) {
 
   if (!ok) {
     // Sem WebGL → cai pra raposa SVG (enriquecimento progressivo, nunca requisito).
-    return <FoxMascote size={size} seguirMouse />;
+    return <FoxMascote size={size} emocao={emocao} seguirMouse={seguirMouse} />;
   }
 
   return (
     <div style={{ width: size, height: size }}>
-      <RaposaCena />
+      <RaposaCena emocao={emocao} seguirMouse={seguirMouse} />
     </div>
   );
 }
