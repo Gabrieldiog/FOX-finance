@@ -69,47 +69,47 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col gap-6 px-6 py-10">
+    <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col gap-6 px-6 py-8">
       <div className="flex items-center justify-between">
-        <Link href="/" className="text-sm text-zinc-500">
+        <Link href="/" className="text-sm text-nevoa-fraca transition hover:text-nevoa">
           Cancelar
         </Link>
-        <div className="flex rounded-full border border-zinc-300 p-0.5 text-sm dark:border-zinc-700">
+        <div className="flex rounded-full border border-linha p-1 text-sm">
           <button
             type="button"
             onClick={() => trocarTipo("expense")}
-            className={`rounded-full px-3 py-1 ${type === "expense" ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900" : ""}`}
+            className={`rounded-full px-4 py-1 transition ${type === "expense" ? "bg-nevoa text-breu" : "text-nevoa-fraca"}`}
           >
             Gasto
           </button>
           <button
             type="button"
             onClick={() => trocarTipo("income")}
-            className={`rounded-full px-3 py-1 ${type === "income" ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900" : ""}`}
+            className={`rounded-full px-4 py-1 transition ${type === "income" ? "bg-nevoa text-breu" : "text-nevoa-fraca"}`}
           >
             Ganho
           </button>
         </div>
       </div>
 
-      <div className="py-6">
+      <div className="py-8">
         <input
           autoFocus
           inputMode="numeric"
           aria-label="Valor"
           value={formatBRL(cents)}
           onChange={(e) => setCents(Number(e.target.value.replace(/\D/g, "") || "0"))}
-          className="w-full bg-transparent text-center text-5xl font-semibold tabular-nums outline-none"
+          className={`tnum w-full bg-transparent text-center font-display text-6xl font-semibold outline-none transition-colors ${type === "income" ? "text-entrou" : "text-saiu"} ${cents === 0 ? "opacity-40" : ""}`}
         />
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap justify-center gap-2">
         {cats.map((c) => (
           <button
             key={c.id}
             type="button"
             onClick={() => setCategoryId(categoryId === c.id ? null : c.id)}
-            className={`flex items-center gap-2 rounded-full border px-3 py-2 text-sm ${categoryId === c.id ? "border-zinc-900 dark:border-white" : "border-zinc-200 dark:border-zinc-800"}`}
+            className={`flex items-center gap-2 rounded-full border px-3 py-2 text-sm transition ${categoryId === c.id ? "border-nevoa" : "border-linha text-nevoa-fraca"}`}
           >
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
             {c.name}
@@ -121,17 +121,17 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
         value={descricao}
         onChange={(e) => setDescricao(e.target.value)}
         placeholder="Descrição (opcional)"
-        className="h-11 rounded-lg border border-zinc-300 px-3 text-sm dark:border-zinc-700 dark:bg-transparent"
+        className="h-12 rounded-xl border border-linha bg-carvao px-4 text-sm outline-none placeholder:text-nevoa-fraca"
       />
 
-      {erro && <p className="text-sm text-red-600">{erro}</p>}
+      {erro && <p className="text-sm text-saiu">{erro}</p>}
 
       <div className="mt-auto flex flex-col gap-3">
         <button
           type="button"
           onClick={salvar}
           disabled={salvando || excluindo}
-          className="h-12 rounded-full bg-zinc-900 font-medium text-white disabled:opacity-60 dark:bg-white dark:text-zinc-900"
+          className="flex h-12 items-center justify-center rounded-full bg-ambar font-medium text-tinta transition active:scale-[.98] disabled:opacity-60"
         >
           {salvando ? "Salvando…" : "Salvar"}
         </button>
@@ -140,7 +140,7 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
             type="button"
             onClick={excluir}
             disabled={salvando || excluindo}
-            className="h-11 rounded-full text-sm font-medium text-red-600 disabled:opacity-60"
+            className="h-11 rounded-full text-sm font-medium text-saiu transition active:scale-[.98] disabled:opacity-60"
           >
             {excluindo ? "Excluindo…" : "Excluir lançamento"}
           </button>

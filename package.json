@@ -17,6 +17,7 @@
     "@node-rs/argon2": "^2.0.2",
     "better-auth": "^1.6.23",
     "drizzle-orm": "^0.45.2",
+    "motion": "^12.42.2",
     "next": "16.2.10",
     "postgres": "^3.4.9",
     "react": "19.2.4",

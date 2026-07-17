@@ -9,30 +9,30 @@ export default async function Conta() {
   if (!session) redirect("/entrar");
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-6 py-10">
-      <header className="flex items-center justify-between">
-        <Link href="/" className="text-sm text-zinc-500">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-6 py-8">
+      <header className="flex items-center justify-between text-sm text-nevoa-fraca">
+        <Link href="/" className="transition hover:text-nevoa">
           Voltar
         </Link>
-        <h1 className="text-lg font-semibold">Conta</h1>
+        <h1 className="font-display text-lg font-semibold text-nevoa">Conta</h1>
         <span className="w-12" />
       </header>
 
-      <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-        <p className="text-sm">{session.user.name}</p>
-        <p className="text-sm text-zinc-500">{session.user.email}</p>
+      <div className="rounded-2xl border border-linha bg-carvao p-5">
+        <p>{session.user.name}</p>
+        <p className="text-sm text-nevoa-fraca">{session.user.email}</p>
       </div>
 
       <a
         href="/api/export"
-        className="flex h-12 items-center justify-center rounded-full border border-zinc-300 font-medium dark:border-zinc-700"
+        className="flex h-12 items-center justify-center rounded-full border border-linha font-medium transition active:scale-[.98]"
       >
         Exportar meus dados
       </a>
 
       <ExcluirConta />
 
-      <p className="mt-auto text-center text-xs text-zinc-500">
+      <p className="mt-auto text-center text-xs text-nevoa-fraca">
         <Link href="/privacidade" className="underline">
           Política de privacidade
         </Link>

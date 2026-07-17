@@ -7,11 +7,12 @@ export function SairBotao() {
   const router = useRouter();
   return (
     <button
+      type="button"
       onClick={async () => {
         await authClient.signOut();
         router.refresh();
       }}
-      className="h-11 rounded-full border border-zinc-300 px-5 font-medium dark:border-zinc-700"
+      className="transition hover:text-nevoa"
     >
       Sair
     </button>

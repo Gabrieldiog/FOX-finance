@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { FoxGlyph } from "@/components/marca";
 
 export default function CriarConta() {
   const router = useRouter();
@@ -31,28 +32,31 @@ export default function CriarConta() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-1 flex-col justify-center gap-6 px-6 py-16">
-      <h1 className="text-2xl font-semibold tracking-tight">Criar conta</h1>
+      <div className="flex flex-col items-center gap-3 text-center">
+        <FoxGlyph className="h-14 w-14" />
+        <h1 className="font-display text-2xl font-semibold tracking-tight">Criar conta</h1>
+      </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1.5 text-sm text-nevoa-fraca">
           Nome
           <input
             name="nome"
             required
             autoComplete="name"
-            className="h-12 rounded-lg border border-zinc-300 px-3 dark:border-zinc-700 dark:bg-transparent"
+            className="h-12 rounded-xl border border-linha bg-carvao px-4 text-base text-nevoa outline-none"
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1.5 text-sm text-nevoa-fraca">
           E-mail
           <input
             name="email"
             type="email"
             required
             autoComplete="email"
-            className="h-12 rounded-lg border border-zinc-300 px-3 dark:border-zinc-700 dark:bg-transparent"
+            className="h-12 rounded-xl border border-linha bg-carvao px-4 text-base text-nevoa outline-none"
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1.5 text-sm text-nevoa-fraca">
           Senha
           <input
             name="senha"
@@ -60,27 +64,27 @@ export default function CriarConta() {
             required
             minLength={8}
             autoComplete="new-password"
-            className="h-12 rounded-lg border border-zinc-300 px-3 dark:border-zinc-700 dark:bg-transparent"
+            className="h-12 rounded-xl border border-linha bg-carvao px-4 text-base text-nevoa outline-none"
           />
         </label>
-        {erro && <p className="text-sm text-red-600">{erro}</p>}
+        {erro && <p className="text-sm text-saiu">{erro}</p>}
         <button
           disabled={carregando}
-          className="h-12 rounded-full bg-zinc-900 font-medium text-white disabled:opacity-60 dark:bg-white dark:text-zinc-900"
+          className="mt-1 h-12 rounded-full bg-ambar font-medium text-tinta transition active:scale-[.98] disabled:opacity-60"
         >
           {carregando ? "Criando…" : "Criar conta"}
         </button>
       </form>
-      <p className="text-xs text-zinc-500">
+      <p className="text-center text-xs text-nevoa-fraca">
         Ao criar conta, você concorda com a{" "}
         <Link href="/privacidade" className="underline">
           política de privacidade
         </Link>
         .
       </p>
-      <p className="text-sm text-zinc-500">
+      <p className="text-center text-sm text-nevoa-fraca">
         Já tem conta?{" "}
-        <Link href="/entrar" className="underline">
+        <Link href="/entrar" className="text-nevoa underline">
           Entrar
         </Link>
       </p>
