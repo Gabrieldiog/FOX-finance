@@ -25,6 +25,19 @@ Next.js (App Router, TypeScript) · Better Auth · PostgreSQL · Drizzle ORM · 
 
 Banco próprio e isolado — dado financeiro privado não se mistura com nenhum outro serviço.
 
+## Rodando local
+
+Precisa de Node e Docker (pro Postgres).
+
+```bash
+cp .env.example .env.local          # ajuste e gere um segredo: openssl rand -base64 32
+docker compose up -d                # sobe o Postgres local
+npm install
+npm run dev                         # http://localhost:3000
+```
+
+Health check em `GET /api/health`.
+
 ## Status
 
-Em construção. Backend (autenticação + dados isolados) antes do frontend. O desenho completo — modelo de dados, regras de segurança e roadmap — vive no `CLAUDE.md` deste repositório.
+Em construção, backend antes do frontend. Já de pé: o esqueleto (Next 16 + Drizzle/PostgreSQL + Better Auth), a validação de ambiente e o health check. Próximo: autenticação por convite e o isolamento de dados por usuário.
