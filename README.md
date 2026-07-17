@@ -39,4 +39,4 @@ Health check em `GET /api/health`.
 
 ## Status
 
-Em construção, backend antes do frontend. Já de pé: o esqueleto (Next 16 + Drizzle/PostgreSQL + Better Auth), a validação de ambiente e o health check. Próximo: autenticação por convite e o isolamento de dados por usuário.
+Em construção, backend antes do frontend. Já de pé: o esqueleto, a validação de ambiente, o health check e a **autenticação** (e-mail + senha com Argon2id, cadastro por convite, sessão em banco). Próximo: o isolamento de dados por usuário — com um teste provando que uma conta não vê a da outra — e o lançamento de gastos.

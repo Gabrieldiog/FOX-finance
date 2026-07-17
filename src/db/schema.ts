@@ -1,4 +1,4 @@
-// As tabelas do Fox vivem aqui, sempre escopadas por usuário.
-// As tabelas de autenticação (user, session, account, verification) são
-// geradas pelo Better Auth no T02 (`npm run auth:generate`).
-export {};
+// As tabelas de autenticação (user, session, account, verification) são geradas
+// pelo Better Auth em auth-schema.ts. As tabelas do Fox (transações, categorias)
+// entram aqui no T03, sempre escopadas por usuário.
+export * from "./auth-schema";
