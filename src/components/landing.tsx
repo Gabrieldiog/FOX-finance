@@ -51,6 +51,12 @@ const PASSOS = [
   ["Entenda com calma", "O resumo te diz, num número, se sobrou ou faltou."],
 ];
 
+const SEGURANCA = [
+  ["Cada conta no seu canto", "Ninguém vê o dinheiro de ninguém. Seus dados são lidos só pela sua sessão — nunca por um id de fora."],
+  ["Senha protegida de verdade", "Guardada com Argon2id, o padrão de hoje. Nem a gente vê sua senha."],
+  ["Robô e força bruta não passam", "Trava depois de 5 erros, honeypot no cadastro e limite de tentativas por IP."],
+];
+
 export function Landing() {
   const { scrollYProgress } = useScroll();
   const barra = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.3 });
@@ -304,6 +310,39 @@ export function Landing() {
                 <p className="max-w-xs text-nevoa-fraca">{texto}</p>
               </Revela>
             ))}
+          </div>
+        </section>
+
+        {/* 5.5 SEGURANÇA — faixa escura com a raposa e cards */}
+        <section className="relative mt-8 overflow-hidden bg-[#052e16] px-5 py-20 text-[#e7f8ee] md:py-28">
+          <div className="pointer-events-none absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-verde-vivo/20 blur-3xl" />
+          <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-12">
+            <Revela className="flex flex-col items-center gap-4 text-center">
+              <FoxMascote size={110} />
+              <span className="text-xs font-bold uppercase tracking-widest text-[#4ade80]">Segurança</span>
+              <h2 className="max-w-2xl font-display text-3xl font-extrabold leading-tight tracking-tight md:text-4xl">
+                Dinheiro é coisa séria. A gente trata assim.
+              </h2>
+              <p className="max-w-xl text-lg text-[#9db4a8]">
+                Poucas contas, dados de gente de verdade. Por isso a segurança não é enfeite — é o centro do projeto.
+              </p>
+            </Revela>
+            <div className="grid gap-5 md:grid-cols-3">
+              {SEGURANCA.map(([titulo, texto], i) => (
+                <Revela key={titulo} atraso={i * 0.08}>
+                  <CardTilt intensidade={6} className="flex h-full flex-col gap-2 rounded-2xl border border-[#1e3a2a] bg-[#0a1f14] p-6">
+                    <span className="mb-1 flex h-10 w-10 items-center justify-center rounded-xl bg-[#12331f]">
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 2 4 5v6c0 5 3.5 8 8 11 4.5-3 8-6 8-11V5l-8-3Z" />
+                        <path d="m9 12 2 2 4-4" />
+                      </svg>
+                    </span>
+                    <h3 className="font-display text-lg font-bold text-[#e7f8ee]">{titulo}</h3>
+                    <p className="text-[#9db4a8]">{texto}</p>
+                  </CardTilt>
+                </Revela>
+              ))}
+            </div>
           </div>
         </section>
 
