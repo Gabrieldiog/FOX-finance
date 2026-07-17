@@ -116,7 +116,7 @@ export function FormaAuth({ modo: inicial }: { modo: Modo }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.26, ease: "easeOut" }}
-                className="relative max-w-xs font-display text-lg font-semibold text-menta-tinta"
+                className="relative max-w-[15rem] font-display text-xl font-extrabold leading-snug tracking-tight text-menta-tinta md:text-2xl"
               >
                 {FRASE[modo]}
               </m.p>
