@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LazyMotion, domMax, m, AnimatePresence } from "motion/react";
 import { authClient } from "@/lib/auth-client";
-import { FoxMascote, type Emocao } from "@/components/fox-mascote";
+import { type Emocao } from "@/components/fox-mascote";
+import { RaposaCanvas } from "@/components/raposa-3d/raposa-canvas";
 import { Marca } from "@/components/marca";
 import { FundoVivo } from "@/components/fundo-vivo";
 
@@ -106,7 +107,7 @@ export function FormaAuth({ modo: inicial }: { modo: Modo }) {
                 transition={emocao === "feliz" ? { duration: 0.4 } : { duration: 6, repeat: Infinity, ease: "easeInOut" }}
               />
               <m.div animate={{ scale: emocao === "feliz" ? [1, 1.06, 1] : 1 }} transition={{ duration: 0.45 }}>
-                <FoxMascote size={190} emocao={emocao} seguirMouse={emocao === "neutro" || emocao === "atento"} />
+                <RaposaCanvas size={210} emocao={emocao} seguirMouse={emocao === "neutro" || emocao === "atento"} />
               </m.div>
             </div>
             <AnimatePresence mode="wait">

@@ -6,9 +6,7 @@ import { Center, ContactShadows, Environment } from "@react-three/drei";
 import { easing } from "maath";
 import * as THREE from "three";
 
-// Raposa 3D low-poly facetada, construída no código (sem Blender): primitivas
-// com flatShading pra dar o look "origami", e a cabeça segue o cursor.
-// Quando tivermos um .glb caprichado, é só trocar este grupo pelo <mesh> do gltfjsx.
+export type Emocao = "neutro" | "atento" | "tapado" | "espiando" | "feliz" | "erro";
 
 const LARANJA = "#f4841f";
 const LARANJA_ESC = "#e06a0e";
@@ -17,40 +15,59 @@ const ESCURO = "#2b1a12";
 const ORELHA_INT = "#4b2e2a";
 const VERDE = "#22c55e";
 
-function Raposa(props: ThreeElements["group"]) {
+function Raposa({
+  emocao = "neutro",
+  seguirMouse = true,
+  ...props
+}: { emocao?: Emocao; seguirMouse?: boolean } & ThreeElements["group"]) {
   const grupo = useRef<THREE.Group>(null!);
   const corpo = useRef<THREE.Group>(null!);
+  const pataE = useRef<THREE.Group>(null!);
+  const pataD = useRef<THREE.Group>(null!);
 
   useFrame((state, delta) => {
-    const { x, y } = state.pointer; // -1..1, centrado no canvas
-    // dampE = damping independente de FPS. Amplitudes pequenas pra não "quebrar o pescoço".
-    easing.dampE(grupo.current.rotation, [-y * 0.35, x * 0.55, 0], 0.25, delta);
     const t = state.clock.elapsedTime;
-    // respiração sutil
+    const { x, y } = state.pointer; // -1..1
+
+    // Cabeça segue o mouse (mais discreto quando não é pra seguir).
+    const ry = (seguirMouse ? 0.5 : 0.16) * x;
+    const rx = (seguirMouse ? 0.3 : 0.1) * -y;
+    const lean = emocao === "atento" ? 0.12 : 0; // inclina pra frente, curiosa
+    const shake = emocao === "erro" ? Math.sin(t * 38) * 0.05 : 0; // tremida no erro
+    easing.dampE(grupo.current.rotation, [rx + lean, ry, shake], 0.2, delta);
+
+    // Respiração + pulinho quando feliz.
+    const jump = emocao === "feliz" ? Math.abs(Math.sin(t * 5.5)) * 0.16 : 0;
+    easing.damp3(corpo.current.position, [0, jump, 0], 0.14, delta);
     corpo.current.scale.setScalar(1 + Math.sin(t * 1.4) * 0.015);
+
+    // Patas: tapam os olhos na senha ("tapado"); no "espiando" só a esquerda tapa.
+    const cobreE = emocao === "tapado" || emocao === "espiando";
+    const cobreD = emocao === "tapado";
+    easing.damp3(pataE.current.position, cobreE ? [-0.28, 0.1, 1.02] : [-0.36, -0.62, 0.62], 0.12, delta);
+    easing.damp3(pataD.current.position, cobreD ? [0.28, 0.1, 1.02] : [0.36, -0.62, 0.62], 0.12, delta);
   });
 
   return (
     <group ref={grupo} {...props} dispose={null}>
       <group ref={corpo}>
-        {/* Cabeça — redondinha e facetada (detail 1 = mais faces, mais redonda) */}
+        {/* Cabeça redondinha e facetada */}
         <mesh castShadow scale={[1.02, 1, 0.96]}>
           <icosahedronGeometry args={[1, 1]} />
           <meshStandardMaterial color={LARANJA} flatShading metalness={0} roughness={0.6} />
         </mesh>
 
-        {/* Focinho pequeno e discreto (creme), encostado na cara */}
+        {/* Focinho + nariz */}
         <mesh castShadow position={[0, -0.32, 0.78]} scale={[0.4, 0.3, 0.34]}>
           <icosahedronGeometry args={[1, 1]} />
           <meshStandardMaterial color={CREME} flatShading metalness={0} roughness={0.7} />
         </mesh>
-        {/* Nariz — na pontinha do focinho */}
         <mesh position={[0, -0.3, 1.08]}>
           <icosahedronGeometry args={[0.1, 1]} />
           <meshStandardMaterial color={ESCURO} flatShading roughness={0.4} />
         </mesh>
 
-        {/* Orelhas: pirâmide triangular pontuda (cara de raposa), face lisa pra frente */}
+        {/* Orelhas triangulares pontudas */}
         {[-1, 1].map((lado) => (
           <group key={lado} position={[lado * 0.5, 1.0, 0.1]} rotation={[-0.16, 0, lado * 0.2]}>
             <mesh castShadow rotation={[0, lado * -0.5 + Math.PI, 0]}>
@@ -64,7 +81,7 @@ function Raposa(props: ThreeElements["group"]) {
           </group>
         ))}
 
-        {/* Olhos: contas pretas brilhantes com brilho (fofura clássica de mascote) */}
+        {/* Olhos: contas pretas brilhantes com brilho */}
         {[-1, 1].map((lado) => (
           <group key={lado} position={[lado * 0.3, 0.1, 0.88]}>
             <mesh>
@@ -82,7 +99,7 @@ function Raposa(props: ThreeElements["group"]) {
           </group>
         ))}
 
-        {/* Corpinho redondinho */}
+        {/* Corpinho + barriga */}
         <mesh castShadow position={[0, -1.32, 0]} scale={[0.74, 0.82, 0.72]}>
           <icosahedronGeometry args={[1, 1]} />
           <meshStandardMaterial color={LARANJA_ESC} flatShading metalness={0} roughness={0.65} />
@@ -92,7 +109,7 @@ function Raposa(props: ThreeElements["group"]) {
           <meshStandardMaterial color={CREME} flatShading roughness={0.7} />
         </mesh>
 
-        {/* Coleira verde lisa e redonda + plaquinha dourada */}
+        {/* Coleira verde + plaquinha dourada */}
         <mesh position={[0, -0.84, 0]} rotation={[1.45, 0, 0]} scale={[1, 1, 0.72]}>
           <torusGeometry args={[0.72, 0.12, 12, 32]} />
           <meshStandardMaterial color={VERDE} metalness={0.15} roughness={0.45} />
@@ -101,12 +118,32 @@ function Raposa(props: ThreeElements["group"]) {
           <cylinderGeometry args={[0.11, 0.11, 0.05, 20]} />
           <meshStandardMaterial color="#fbbf24" metalness={0.4} roughness={0.35} />
         </mesh>
+
+        {/* Patas (tapam os olhos na senha) */}
+        <group ref={pataE} position={[-0.36, -0.62, 0.62]}>
+          <mesh castShadow>
+            <icosahedronGeometry args={[0.2, 1]} />
+            <meshStandardMaterial color={LARANJA} flatShading metalness={0} roughness={0.6} />
+          </mesh>
+        </group>
+        <group ref={pataD} position={[0.36, -0.62, 0.62]}>
+          <mesh castShadow>
+            <icosahedronGeometry args={[0.2, 1]} />
+            <meshStandardMaterial color={LARANJA} flatShading metalness={0} roughness={0.6} />
+          </mesh>
+        </group>
       </group>
     </group>
   );
 }
 
-export default function RaposaCena() {
+export default function RaposaCena({
+  emocao = "neutro",
+  seguirMouse = true,
+}: {
+  emocao?: Emocao;
+  seguirMouse?: boolean;
+}) {
   return (
     <Canvas
       shadows
@@ -121,7 +158,7 @@ export default function RaposaCena() {
 
       <Suspense fallback={null}>
         <Center position={[0, 0.5, 0]}>
-          <Raposa />
+          <Raposa emocao={emocao} seguirMouse={seguirMouse} />
         </Center>
         <Environment preset="city" environmentIntensity={0.35} />
         <ContactShadows position={[0, -2, 0]} opacity={0.45} scale={9} blur={2.6} far={4} />

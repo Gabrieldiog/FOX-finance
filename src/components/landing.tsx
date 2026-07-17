@@ -8,7 +8,6 @@ import {
   useScroll,
   useSpring,
 } from "motion/react";
-import { FoxMascote } from "@/components/fox-mascote";
 import { FoxGlyph } from "@/components/marca";
 import { FundoVivo } from "@/components/fundo-vivo";
 import { CardTilt, ContadorInView, BarraInView, Magnetico } from "@/components/efeitos";
@@ -153,12 +152,20 @@ export function Landing() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: "spring", stiffness: 160, damping: 18, delay: 0.2 }}
-            className="flex justify-center"
+            className="flex flex-col items-center gap-4"
           >
             {/* A raposa 3D, na moldura verde escura que dá o volume dela */}
             <div className="relative flex items-center justify-center overflow-hidden rounded-[2.5rem] bg-[#08160e] p-2 shadow-[0_30px_70px_-30px_rgba(6,78,59,0.55)]">
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(34,197,94,0.22),transparent_62%)]" />
               <RaposaCanvas size={360} />
+            </div>
+            <div className="flex flex-col items-center gap-1 text-center">
+              <span className="font-display text-2xl font-extrabold tracking-tight">
+                Fox <span className="text-verde-texto">Finance</span>
+              </span>
+              <span className="font-display text-[0.7rem] font-bold uppercase tracking-[0.3em] text-nevoa-fraca">
+                sua grana, do seu jeito
+              </span>
             </div>
           </m.div>
         </section>
@@ -187,11 +194,8 @@ export function Landing() {
         </section>
 
         {/* 3. POR QUE A RAPOSA */}
-        <section className="mx-auto grid w-full max-w-5xl items-center gap-10 px-5 py-16 md:grid-cols-2 md:gap-14 md:py-24">
-          <Revela className="order-2 flex justify-center md:order-1">
-            <FoxMascote size={260} emocao="feliz" />
-          </Revela>
-          <Revela atraso={0.1} className="order-1 flex flex-col gap-5 md:order-2">
+        <section className="mx-auto w-full max-w-2xl px-5 py-16 md:py-24">
+          <Revela className="flex flex-col items-center gap-5 text-center">
             <span className="text-xs font-bold uppercase tracking-widest text-verde-texto">Por que a raposa</span>
             <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight md:text-4xl">
               Por que uma raposa?
@@ -200,17 +204,17 @@ export function Landing() {
               Raposa é esperta, econômica e sabe estocar pro inverno. É esse instinto que o Fox
               empresta pra você: faro pro desperdício e disciplina sem esforço.
             </p>
-            <ul className="flex flex-col gap-3">
+            <ul className="flex flex-wrap justify-center gap-3">
               {PORQUE.map((b, i) => (
                 <m.li
                   key={b}
-                  initial={{ opacity: 0, x: -16 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.1, ease: SUAVE }}
-                  className="flex items-center gap-3 font-semibold"
+                  className="flex items-center gap-2 rounded-full border border-linha bg-carvao/70 px-4 py-2 font-semibold backdrop-blur"
                 >
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-verde text-sm text-tinta">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-verde text-xs text-tinta">
                     ✓
                   </span>
                   {b}
@@ -275,7 +279,9 @@ export function Landing() {
             {/* Anotar rápido + raposa */}
             <Revela atraso={0.14}>
               <CardTilt className="flex h-full flex-col items-center justify-center gap-2 rounded-3xl border border-linha bg-menta/60 p-6 text-center backdrop-blur">
-                <FoxMascote size={90} emocao="atento" />
+                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-verde font-display text-lg font-extrabold text-tinta shadow-[0_8px_20px_-6px_var(--verde)]">
+                  10s
+                </span>
                 <p className="font-display text-lg font-bold leading-tight">Anotar leva 10 segundos</p>
                 <p className="text-sm text-nevoa-fraca">valor, categoria, salvou.</p>
               </CardTilt>
@@ -323,7 +329,6 @@ export function Landing() {
           <div className="pointer-events-none absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-verde-vivo/20 blur-3xl" />
           <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-12">
             <Revela className="flex flex-col items-center gap-4 text-center">
-              <FoxMascote size={110} />
               <span className="text-xs font-bold uppercase tracking-widest text-[#4ade80]">Segurança</span>
               <h2 className="max-w-2xl font-display text-3xl font-extrabold leading-tight tracking-tight md:text-4xl">
                 Dinheiro é coisa séria. A gente trata assim.
@@ -357,7 +362,6 @@ export function Landing() {
             <div className="pointer-events-none absolute -left-16 top-0 h-64 w-64 rounded-full bg-white/15 blur-3xl" />
             <div className="pointer-events-none absolute -right-10 bottom-0 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
             <div className="relative flex flex-col items-center gap-6">
-              <FoxMascote size={128} emocao="feliz" acenar />
               <h2 className="max-w-xl font-display text-3xl font-extrabold leading-tight tracking-tight md:text-5xl">
                 Bora deixar o dinheiro sob controle?
               </h2>
