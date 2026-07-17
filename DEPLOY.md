@@ -18,7 +18,6 @@ O código já usa `prepare: false` + `max: 1`, que é o que o pooler transaction
 | `DATABASE_URL` | a string do **pooler** do Supabase (transaction, `6543`) |
 | `BETTER_AUTH_SECRET` | um segredo forte — gere com `openssl rand -base64 32` |
 | `BETTER_AUTH_URL` | a URL de produção (ex.: `https://fox-finance.vercel.app`) |
-| `ALLOWED_EMAILS` | os e-mails que podem criar conta, separados por vírgula |
 
 3. **Deploy.**
 
@@ -26,7 +25,7 @@ O código já usa `prepare: false` + `max: 1`, que é o que o pooler transaction
 
 - As categorias globais só precisam ser semeadas **uma vez por banco**. Se o banco de produção for o mesmo do desenvolvimento, elas já estão lá; se for um banco novo, rode:
   `DATABASE_URL="<string do pooler>" node --experimental-strip-types scripts/seed.ts`
-- As pessoas convidadas criam a conta em `/criar-conta` (só quem estiver em `ALLOWED_EMAILS`).
+- Qualquer pessoa cria a conta em `/criar-conta` — cada uma com seu espaço isolado das outras.
 
 ## Pendências conscientes (pós-lançamento)
 

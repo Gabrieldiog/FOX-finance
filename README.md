@@ -14,7 +14,7 @@ Projeto de portfólio com uso real — poucas contas, cada pessoa com o próprio
 
 ## Segurança (o centro do projeto)
 
-- **Autenticação madura, não caseira.** Sessão guardada no banco (revogável), senha com Argon2id, cadastro por convite.
+- **Autenticação madura, não caseira.** Sessão guardada no banco (revogável), senha com Argon2id; cadastro aberto, com cada conta totalmente isolada das outras.
 - **Isolamento por usuário.** Todo dado é lido pelo `user_id` da sessão, nunca por um id vindo do cliente — e um teste prova que uma conta não alcança a da outra.
 - **Dinheiro em centavos inteiros**, validação sempre no servidor, segredos fora do código.
 - **LGPD proporcional.** Coleta mínima (só o necessário), com exportar e excluir a conta de verdade.
