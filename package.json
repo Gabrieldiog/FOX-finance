@@ -10,6 +10,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "auth:generate": "npx @better-auth/cli@latest generate",
+    "db:seed": "node --experimental-strip-types --env-file=.env.local scripts/seed.ts",
     "test": "vitest run"
   },
   "dependencies": {

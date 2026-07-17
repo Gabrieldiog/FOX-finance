@@ -39,4 +39,4 @@ Health check em `GET /api/health`.
 
 ## Status
 
-Em construção, backend antes do frontend. Já de pé: o esqueleto, a validação de ambiente, o health check, a **autenticação** (e-mail + senha com Argon2id, cadastro por convite, sessão em banco) e o **isolamento de dados por usuário** (com testes provando que uma conta não vê, nem apaga, o dado da outra). Próximo: o lançamento de gastos e o resumo da semana/mês.
+Em construção, backend antes do frontend. Já de pé: o esqueleto, a validação de ambiente, o health check, a **autenticação**, o **isolamento de dados por usuário** (com testes provando que uma conta não vê a da outra), e agora o **lançamento** (tela "valor primeiro") e o **resumo** da semana/mês — "Sobrou/Faltou", com o quanto entrou, saiu e para onde foi. Próximo: editar/excluir lançamento, LGPD (exportar/excluir conta), PWA e o visual profissional.
