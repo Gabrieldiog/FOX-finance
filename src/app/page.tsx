@@ -5,8 +5,10 @@ import { resumoDoPeriodo, type Periodo } from "@/lib/data/summary";
 import { listRecentTransactions } from "@/lib/data/transactions";
 import { formatBRL } from "@/lib/format";
 import { SairBotao } from "@/components/sair-botao";
-import { Marca, FoxGlyph } from "@/components/marca";
+import { Marca } from "@/components/marca";
 import { NumeroDinheiro } from "@/components/numero-dinheiro";
+import { FoxMascote } from "@/components/fox-mascote";
+import { Aterrissar } from "@/components/aterrissar";
 
 export default async function Home({
   searchParams,
@@ -17,11 +19,13 @@ export default async function Home({
 
   if (!session) {
     return (
-      <main className="mx-auto flex min-h-dvh w-full max-w-md flex-1 flex-col justify-center gap-10 px-6 py-16">
+      <main className="mx-auto flex min-h-svh w-full max-w-md flex-1 flex-col justify-center gap-10 px-6 py-16 pt-safe pb-safe">
         <div className="flex flex-col items-center gap-5 text-center">
-          <FoxGlyph className="h-20 w-20" />
+          <FoxMascote size={128} seguirMouse />
           <div>
-            <h1 className="font-display text-4xl font-semibold tracking-tight">Fox</h1>
+            <h1 className="font-display text-4xl font-extrabold tracking-tight">
+              Fox <span className="text-verde-texto">Finance</span>
+            </h1>
             <p className="mt-2 text-nevoa-fraca">
               Anote no susto, entenda com calma. Sua grana, do seu jeito.
             </p>
@@ -30,13 +34,13 @@ export default async function Home({
         <div className="flex flex-col gap-3">
           <Link
             href="/entrar"
-            className="flex h-12 items-center justify-center rounded-full bg-ambar px-5 font-medium text-tinta transition active:scale-[.98]"
+            className="flex h-13 items-center justify-center rounded-lg bg-verde px-5 font-display font-bold text-tinta shadow-[0_8px_22px_-8px_var(--verde)] transition hover:bg-verde-forte active:scale-[.98]"
           >
             Entrar
           </Link>
           <Link
             href="/criar-conta"
-            className="flex h-12 items-center justify-center rounded-full border border-linha px-5 font-medium transition active:scale-[.98]"
+            className="flex h-13 items-center justify-center rounded-lg border border-linha bg-carvao px-5 font-semibold text-verde-texto transition hover:border-verde/50 active:scale-[.98]"
           >
             Criar conta
           </Link>
@@ -51,12 +55,13 @@ export default async function Home({
   const ultimos = await listRecentTransactions(session.user.id, 15);
   const sobrou = r.saldo >= 0;
   const maior = Math.max(1, ...r.categorias.map((c) => c.total));
+  const vazio = r.entrou === 0 && r.saiu === 0 && ultimos.length === 0;
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-6 pb-28 pt-8">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-5 pt-safe pb-[calc(6rem+env(safe-area-inset-bottom))] [padding-top:calc(env(safe-area-inset-top)+1.5rem)]">
       <header className="flex items-center justify-between">
         <Marca />
-        <div className="flex items-center gap-4 text-sm text-nevoa-fraca">
+        <div className="flex items-center gap-4 text-sm font-semibold text-nevoa-fraca">
           <Link href="/conta" className="transition hover:text-nevoa">
             Conta
           </Link>
@@ -64,55 +69,77 @@ export default async function Home({
         </div>
       </header>
 
-      <div className="flex rounded-full border border-linha p-1 text-sm">
+      <div className="flex rounded-full border border-linha bg-carvao p-1 text-sm font-semibold shadow-[var(--sombra-card)]">
         <Link
           href="/?periodo=semana"
-          className={`flex-1 rounded-full py-1.5 text-center transition ${periodo === "semana" ? "bg-nevoa text-breu" : "text-nevoa-fraca"}`}
+          className={`flex-1 rounded-full py-2 text-center transition ${periodo === "semana" ? "bg-verde text-tinta" : "text-nevoa-fraca"}`}
         >
           Semana
         </Link>
         <Link
           href="/?periodo=mes"
-          className={`flex-1 rounded-full py-1.5 text-center transition ${periodo === "mes" ? "bg-nevoa text-breu" : "text-nevoa-fraca"}`}
+          className={`flex-1 rounded-full py-2 text-center transition ${periodo === "mes" ? "bg-verde text-tinta" : "text-nevoa-fraca"}`}
         >
           Mês
         </Link>
       </div>
 
-      <section className="rounded-3xl border border-linha bg-carvao p-7">
-        <p className="text-xs font-medium uppercase tracking-wider text-nevoa-fraca">
-          {sobrou ? "Sobrou" : "Faltou"}
-        </p>
-        <NumeroDinheiro
-          cents={Math.abs(r.saldo)}
-          className={`mt-1 block font-display text-5xl font-semibold ${sobrou ? "text-entrou" : "text-saiu"}`}
-        />
-        <div className="mt-6 grid grid-cols-3 gap-3 text-sm">
-          <div>
-            <p className="text-nevoa-fraca">Entrou</p>
-            <p className="tnum mt-0.5 font-medium text-entrou">{formatBRL(r.entrou)}</p>
-          </div>
-          <div>
-            <p className="text-nevoa-fraca">Saiu</p>
-            <p className="tnum mt-0.5 font-medium text-saiu">{formatBRL(r.saiu)}</p>
-          </div>
-          <div>
-            <p className="text-nevoa-fraca">Saldo</p>
-            <p className="tnum mt-0.5 font-medium">{formatBRL(r.saldo)}</p>
-          </div>
+      {/* Card-herói (o único com gradiente) */}
+      <Aterrissar>
+        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-verde to-verde-vivo p-7 text-menta-tinta shadow-[0_20px_50px_-20px_var(--verde)]">
+          <div className="pointer-events-none absolute -right-8 -top-10 h-40 w-40 rounded-full bg-white/15 blur-2xl" />
+          <p className="font-display text-sm font-bold uppercase tracking-wider opacity-80">
+            {sobrou ? "Sobrou" : "Faltou"}
+          </p>
+          <NumeroDinheiro
+            cents={Math.abs(r.saldo)}
+            className="mt-1 block font-display text-5xl font-extrabold"
+          />
+          <p className="mt-2 text-sm font-semibold opacity-80">
+            {sobrou ? "No verde — mandou bem." : "No vermelho neste período."} · {periodo === "semana" ? "esta semana" : "este mês"}
+          </p>
+        </section>
+      </Aterrissar>
+
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-2xl border border-linha bg-carvao p-4 shadow-[var(--sombra-card)]">
+          <p className="text-xs font-semibold text-nevoa-fraca">Entrou</p>
+          <p className="dinheiro mt-1 font-bold text-entrou">{formatBRL(r.entrou)}</p>
         </div>
-      </section>
+        <div className="rounded-2xl border border-linha bg-carvao p-4 shadow-[var(--sombra-card)]">
+          <p className="text-xs font-semibold text-nevoa-fraca">Saiu</p>
+          <p className="dinheiro mt-1 font-bold text-saiu">{formatBRL(r.saiu)}</p>
+        </div>
+        <div className="rounded-2xl border border-linha bg-carvao p-4 shadow-[var(--sombra-card)]">
+          <p className="text-xs font-semibold text-nevoa-fraca">Saldo</p>
+          <p className="dinheiro mt-1 font-bold">{formatBRL(r.saldo)}</p>
+        </div>
+      </div>
+
+      {vazio && (
+        <section className="flex flex-col items-center gap-4 rounded-3xl border border-linha bg-carvao px-6 py-10 text-center shadow-[var(--sombra-card)]">
+          <FoxMascote size={120} />
+          <div>
+            <p className="font-display text-lg font-bold">Nada por aqui ainda</p>
+            <p className="mt-1 text-sm text-nevoa-fraca">
+              Registre seu primeiro gasto ou ganho e o Fox cuida do resto.
+            </p>
+          </div>
+        </section>
+      )}
 
       {r.categorias.length > 0 && (
         <section className="flex flex-col gap-3">
-          <p className="text-xs font-medium uppercase tracking-wider text-nevoa-fraca">Para onde foi</p>
+          <p className="font-display text-sm font-bold uppercase tracking-wider text-nevoa-fraca">
+            Para onde foi
+          </p>
           {r.categorias.map((c) => (
             <div key={c.name} className="flex flex-col gap-1.5">
               <div className="flex justify-between text-sm">
-                <span>{c.name}</span>
-                <span className="tnum text-nevoa-fraca">{formatBRL(c.total)}</span>
+                <span className="font-semibold">{c.name}</span>
+                <span className="dinheiro text-nevoa-fraca">{formatBRL(c.total)}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-linha">
+              <div className="h-2.5 overflow-hidden rounded-full bg-menta">
                 <div
                   className="h-full rounded-full"
                   style={{ width: `${(c.total / maior) * 100}%`, backgroundColor: c.color }}
@@ -125,24 +152,24 @@ export default async function Home({
 
       {ultimos.length > 0 && (
         <section className="flex flex-col gap-2">
-          <p className="text-xs font-medium uppercase tracking-wider text-nevoa-fraca">
+          <p className="font-display text-sm font-bold uppercase tracking-wider text-nevoa-fraca">
             Últimos lançamentos
           </p>
           {ultimos.map((t) => (
             <Link
               key={t.id}
               href={`/editar/${t.id}`}
-              className="flex items-center justify-between rounded-2xl border border-linha bg-carvao px-4 py-3 transition active:scale-[.99]"
+              className="flex items-center justify-between rounded-2xl border border-linha bg-carvao px-4 py-3.5 shadow-[var(--sombra-card)] transition hover:-translate-y-0.5 active:scale-[.99]"
             >
-              <span className="flex items-center gap-2.5 text-sm">
+              <span className="flex items-center gap-3 text-sm font-semibold">
                 <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  className="h-3 w-3 shrink-0 rounded-full"
                   style={{ backgroundColor: t.categoryColor ?? "var(--nevoa-fraca)" }}
                 />
                 {t.description || t.categoryName || "Sem categoria"}
               </span>
               <span
-                className={`tnum text-sm font-medium ${t.type === "income" ? "text-entrou" : "text-saiu"}`}
+                className={`dinheiro text-sm font-bold ${t.type === "income" ? "text-entrou" : "text-saiu"}`}
               >
                 {t.type === "income" ? "+" : "−"}
                 {formatBRL(t.amountCents)}
@@ -154,9 +181,9 @@ export default async function Home({
 
       <Link
         href="/novo"
-        className="fixed inset-x-0 bottom-6 mx-auto flex h-14 w-[calc(100%-3rem)] max-w-[26rem] items-center justify-center gap-2 rounded-full bg-ambar font-medium text-tinta shadow-lg shadow-black/20 transition active:scale-[.98]"
+        className="fixed inset-x-0 z-40 mx-auto flex h-14 w-[calc(100%-2.5rem)] max-w-[26rem] items-center justify-center gap-2 rounded-full bg-verde font-display font-bold text-tinta shadow-[0_12px_30px_-8px_var(--verde)] transition active:scale-[.98] bottom-[calc(1.5rem+env(safe-area-inset-bottom))]"
       >
-        <span className="text-lg leading-none">+</span> Novo lançamento
+        <span className="text-xl leading-none">+</span> Novo lançamento
       </Link>
     </main>
   );

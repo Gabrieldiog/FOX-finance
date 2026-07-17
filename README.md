@@ -1,6 +1,6 @@
-# Fox
+# Fox Finance
 
-Gestão financeira pessoal. Anotar um gasto ou um ganho tem que ser mais rápido que rabiscar num papel, e o resumo da semana e do mês tem que se entender num relance. É isso que o Fox faz: simples de usar por fora, seguro de verdade por dentro.
+Gestão financeira pessoal. Anotar um gasto ou um ganho tem que ser mais rápido que rabiscar num papel, e o resumo da semana e do mês tem que se entender num relance. É isso que o Fox Finance faz: simples de usar por fora, seguro de verdade por dentro.
 
 Projeto de portfólio com uso real — poucas contas, cada pessoa com o próprio dinheiro, dados privados de gente de verdade. Por isso a segurança aqui não é enfeite: é requisito.
 
@@ -43,4 +43,4 @@ Health check em `GET /api/health`.
 
 ## Status
 
-Em construção, backend antes do frontend. Já de pé: o esqueleto, a validação de ambiente, o health check, a **autenticação**, o **isolamento de dados por usuário** (com testes provando que uma conta não vê a da outra), e agora o **lançamento** (tela "valor primeiro") o **resumo** da semana/mês — "Sobrou/Faltou", com o quanto entrou, saiu e para onde foi —, **editar e excluir** lançamentos (com a lista dos últimos no dashboard), **LGPD** — exportar seus dados em JSON e excluir a conta de verdade (com política curta) —, um **PWA instalável** (vai pra tela inicial do celular como app), o **visual profissional** com tema claro e escuro e animações — o saldo sobe contando ao abrir —, e agora o **endurecimento de segurança**: trava de força bruta, dicionário de senhas fáceis, honeypot e rate limit persistido no banco. **No ar** — o passo a passo de deploy está no [DEPLOY.md](DEPLOY.md).
+No ar e em evolução, backend antes do frontend. Já de pé: a **autenticação** e o **isolamento de dados por usuário** (com testes provando que uma conta não vê a da outra), o **lançamento** (tela "valor primeiro") e o **resumo** da semana/mês — "Sobrou/Faltou", com o quanto entrou, saiu e para onde foi —, **editar e excluir** lançamentos, **LGPD** (exportar em JSON e excluir a conta de verdade), um **PWA instalável**, o **endurecimento de segurança** (trava de força bruta, dicionário de senhas fáceis, honeypot e rate limit no banco), e agora a **identidade Fox Finance**: verde e branco, a raposa mascote que segue o mouse e reage ao formulário, tipografia Baloo 2 + Nunito + Inter, tema claro e escuro, e responsividade cuidada pro iPhone (safe-area, sem zoom em input, teclado tratado). **No ar** — o passo a passo de deploy está no [DEPLOY.md](DEPLOY.md).
