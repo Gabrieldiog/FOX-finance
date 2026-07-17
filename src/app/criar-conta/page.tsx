@@ -16,6 +16,12 @@ export default function CriarConta() {
     setErro(null);
     setCarregando(true);
     const form = new FormData(e.currentTarget);
+    // Honeypot: gente de verdade nunca vê esse campo; se veio preenchido, é robô.
+    if (String(form.get("site") ?? "") !== "") {
+      setCarregando(false);
+      setErro("Não foi possível concluir.");
+      return;
+    }
     const { error } = await authClient.signUp.email({
       name: String(form.get("nome")),
       email: String(form.get("email")),
@@ -23,7 +29,14 @@ export default function CriarConta() {
     });
     setCarregando(false);
     if (error) {
-      setErro(error.status === 403 ? "Cadastro é só por convite." : "Não foi possível criar a conta.");
+      if (error.code === "USER_ALREADY_EXISTS") {
+        setErro("Esse e-mail já tem conta — é só entrar.");
+      } else if (error.status === 400 && error.message) {
+        // Mensagens do servidor em pt-BR (ex.: aviso de senha fácil).
+        setErro(error.message);
+      } else {
+        setErro("Não foi possível criar a conta.");
+      }
       return;
     }
     router.push("/");
@@ -37,6 +50,12 @@ export default function CriarConta() {
         <h1 className="font-display text-2xl font-semibold tracking-tight">Criar conta</h1>
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+          <label>
+            Site (não preencha)
+            <input name="site" type="text" tabIndex={-1} autoComplete="off" />
+          </label>
+        </div>
         <label className="flex flex-col gap-1.5 text-sm text-nevoa-fraca">
           Nome
           <input

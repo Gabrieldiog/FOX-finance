@@ -16,13 +16,24 @@ export default function Entrar() {
     setErro(null);
     setCarregando(true);
     const form = new FormData(e.currentTarget);
+    // Honeypot: gente de verdade nunca vê esse campo; se veio preenchido, é robô.
+    if (String(form.get("site") ?? "") !== "") {
+      setCarregando(false);
+      setErro("Não foi possível concluir.");
+      return;
+    }
     const { error } = await authClient.signIn.email({
       email: String(form.get("email")),
       password: String(form.get("senha")),
     });
     setCarregando(false);
     if (error) {
-      setErro("E-mail ou senha inválidos.");
+      // O 429 vem com a mensagem da trava de força bruta ("espere X min").
+      setErro(
+        error.status === 429
+          ? (error.message ?? "Muitas tentativas. Espere um pouco e tente de novo.")
+          : "E-mail ou senha inválidos.",
+      );
       return;
     }
     router.push("/");
@@ -36,6 +47,12 @@ export default function Entrar() {
         <h1 className="font-display text-2xl font-semibold tracking-tight">Entrar</h1>
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+          <label>
+            Site (não preencha)
+            <input name="site" type="text" tabIndex={-1} autoComplete="off" />
+          </label>
+        </div>
         <label className="flex flex-col gap-1.5 text-sm text-nevoa-fraca">
           E-mail
           <input
