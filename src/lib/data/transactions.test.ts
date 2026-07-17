@@ -7,6 +7,7 @@ import {
   getTransaction,
   listTransactions,
   softDeleteTransaction,
+  updateTransaction,
 } from "./transactions";
 
 const A = "xtenant-user-a";
@@ -38,6 +39,16 @@ test("um usuário não enxerga (nem apaga) a transação do outro", async () => 
   expect(listaA.some((t) => t.id === bTx.id)).toBe(false);
 
   expect(await softDeleteTransaction(A, bTx.id)).toBeNull();
+
+  // A não consegue editar a transação de B
+  expect(
+    await updateTransaction(A, bTx.id, {
+      type: "expense",
+      amountCents: 1,
+      categoryId: null,
+      description: null,
+    }),
+  ).toBeNull();
 
   // B continua enxergando a própria
   expect(await getTransaction(B, bTx.id)).not.toBeNull();

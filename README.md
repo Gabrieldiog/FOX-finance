@@ -39,4 +39,4 @@ Health check em `GET /api/health`.
 
 ## Status
 
-Em construção, backend antes do frontend. Já de pé: o esqueleto, a validação de ambiente, o health check, a **autenticação**, o **isolamento de dados por usuário** (com testes provando que uma conta não vê a da outra), e agora o **lançamento** (tela "valor primeiro") e o **resumo** da semana/mês — "Sobrou/Faltou", com o quanto entrou, saiu e para onde foi. Próximo: editar/excluir lançamento, LGPD (exportar/excluir conta), PWA e o visual profissional.
+Em construção, backend antes do frontend. Já de pé: o esqueleto, a validação de ambiente, o health check, a **autenticação**, o **isolamento de dados por usuário** (com testes provando que uma conta não vê a da outra), e agora o **lançamento** (tela "valor primeiro") o **resumo** da semana/mês — "Sobrou/Faltou", com o quanto entrou, saiu e para onde foi —, e agora **editar e excluir** lançamentos (com a lista dos últimos no dashboard). Próximo: assinatura recorrente, LGPD (exportar/excluir conta), PWA e o visual profissional.
