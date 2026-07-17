@@ -1,19 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { useRef } from "react";
 import {
   LazyMotion,
   domAnimation,
   m,
   useScroll,
   useSpring,
-  useTransform,
 } from "motion/react";
 import { FoxMascote } from "@/components/fox-mascote";
 import { FoxGlyph } from "@/components/marca";
 import { FundoVivo } from "@/components/fundo-vivo";
+import { CardTilt, ContadorInView, BarraInView, Magnetico } from "@/components/efeitos";
 
 const SUAVE = [0.22, 1, 0.36, 1] as const;
 
@@ -56,13 +54,6 @@ const PASSOS = [
 export function Landing() {
   const { scrollYProgress } = useScroll();
   const barra = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.3 });
-
-  const cardRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: cardProg } = useScroll({
-    target: cardRef,
-    offset: ["start end", "end start"],
-  });
-  const cardY = useTransform(cardProg, [0, 1], [40, -40]);
 
   async function comemorar(e: React.MouseEvent) {
     const reduz = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -132,12 +123,14 @@ export function Landing() {
               className="flex flex-col items-start gap-3"
             >
               <div className="flex flex-wrap items-center gap-3">
-                <Link
-                  href="/criar-conta"
-                  className="flex h-13 items-center justify-center rounded-lg bg-verde px-7 font-display text-base font-bold text-tinta shadow-[0_10px_28px_-8px_var(--verde)] transition hover:bg-verde-forte active:scale-[.98]"
-                >
-                  Criar conta grátis
-                </Link>
+                <Magnetico>
+                  <Link
+                    href="/criar-conta"
+                    className="flex h-13 items-center justify-center rounded-lg bg-verde px-7 font-display text-base font-bold text-tinta shadow-[0_10px_28px_-8px_var(--verde)] transition hover:bg-verde-forte active:scale-[.98]"
+                  >
+                    Criar conta grátis
+                  </Link>
+                </Magnetico>
                 <a
                   href="#como"
                   className="flex h-13 items-center justify-center rounded-lg px-5 font-semibold text-verde-texto transition hover:bg-menta"
@@ -169,16 +162,14 @@ export function Landing() {
           </Revela>
           <div className="grid gap-5 md:grid-cols-3">
             {AJUDA.map(([titulo, texto], i) => (
-              <Revela
-                key={titulo}
-                atraso={i * 0.08}
-                className="flex flex-col gap-3 rounded-2xl border border-linha bg-carvao/70 p-6 backdrop-blur transition hover:-translate-y-1.5 hover:shadow-[var(--sombra-card)]"
-              >
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-menta font-display text-lg font-extrabold text-verde-texto">
-                  {i + 1}
-                </span>
-                <h3 className="font-display text-xl font-bold">{titulo}</h3>
-                <p className="text-nevoa-fraca">{texto}</p>
+              <Revela key={titulo} atraso={i * 0.08}>
+                <CardTilt className="flex h-full flex-col gap-3 rounded-2xl border border-linha bg-carvao/70 p-6 backdrop-blur">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-menta font-display text-lg font-extrabold text-verde-texto">
+                    {i + 1}
+                  </span>
+                  <h3 className="font-display text-xl font-bold">{titulo}</h3>
+                  <p className="text-nevoa-fraca">{texto}</p>
+                </CardTilt>
               </Revela>
             ))}
           </div>
@@ -218,7 +209,7 @@ export function Landing() {
           </Revela>
         </section>
 
-        {/* 4. PRINT EM DESTAQUE */}
+        {/* 4. POR DENTRO — bento de cards com efeitos (tilt 3D + holofote) */}
         <section className="mx-auto w-full max-w-5xl px-5 py-16 md:py-24">
           <Revela className="mb-10 flex flex-col items-center gap-3 text-center">
             <span className="text-xs font-bold uppercase tracking-widest text-verde-texto">Por dentro</span>
@@ -226,28 +217,58 @@ export function Landing() {
               Seu mês, numa olhada
             </h2>
           </Revela>
-          <div ref={cardRef} className="flex justify-center">
-            <m.div
-              initial={{ opacity: 0, rotate: -4, y: 30 }}
-              whileInView={{ opacity: 1, rotate: 0, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.8, ease: SUAVE }}
-              style={{ y: cardY }}
-              className="relative w-[70%] max-w-[300px]"
-            >
-              <div className="pointer-events-none absolute inset-0 -z-10 scale-125 rounded-full bg-verde-vivo/20 blur-3xl" />
-              <div className="relative aspect-[780/1688] w-full overflow-hidden rounded-[2.5rem] border-[6px] border-[#0b1f17] bg-[#0b1f17] shadow-[0_40px_80px_-24px_rgba(6,78,59,0.5)]">
-                <div className="absolute left-1/2 top-2.5 z-10 h-6 w-24 -translate-x-1/2 rounded-full bg-[#0b1f17]" />
-                <Image
-                  src="/prints/dashboard-claro.png"
-                  alt="Resumo do mês no Fox Finance"
-                  width={780}
-                  height={1688}
-                  sizes="(max-width: 768px) 70vw, 300px"
-                  className="h-full w-full object-cover object-top"
-                />
-              </div>
-            </m.div>
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+            {/* Card-herói: saldo que conta ao entrar */}
+            <Revela className="sm:col-span-2 md:col-span-2">
+              <CardTilt className="h-full overflow-hidden rounded-3xl bg-gradient-to-br from-verde to-verde-vivo p-7 text-menta-tinta shadow-[0_24px_50px_-24px_var(--verde)]">
+                <div className="pointer-events-none absolute -right-6 -top-8 h-40 w-40 rounded-full bg-white/15 blur-2xl" />
+                <p className="font-display text-sm font-bold uppercase tracking-wider opacity-80">Sobrou este mês</p>
+                <ContadorInView cents={251097} className="dinheiro mt-1 block font-display text-5xl font-extrabold" />
+                <p className="mt-2 text-sm font-semibold opacity-80">No verde — a raposa aprova.</p>
+              </CardTilt>
+            </Revela>
+            {/* Entrou / Saiu */}
+            <Revela atraso={0.06}>
+              <CardTilt className="flex h-full flex-col justify-center gap-4 rounded-3xl border border-linha bg-carvao/70 p-6 backdrop-blur">
+                <div>
+                  <p className="text-xs font-semibold text-nevoa-fraca">Entrou</p>
+                  <ContadorInView cents={350000} className="dinheiro mt-1 block text-2xl font-extrabold text-entrou" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-nevoa-fraca">Saiu</p>
+                  <ContadorInView cents={98870} className="dinheiro mt-1 block text-2xl font-extrabold text-saiu" />
+                </div>
+              </CardTilt>
+            </Revela>
+            {/* Pra onde foi: barras que enchem */}
+            <Revela atraso={0.1} className="sm:col-span-2">
+              <CardTilt intensidade={5} className="h-full rounded-3xl border border-linha bg-carvao/70 p-6 backdrop-blur">
+                <p className="mb-4 font-display text-sm font-bold uppercase tracking-wider text-nevoa-fraca">Pra onde foi</p>
+                <div className="flex flex-col gap-3.5">
+                  {[
+                    ["Mercado", "R$ 545,80", 100, "#f59e0b"],
+                    ["Contas & Assinaturas", "R$ 220,00", 40, "#14b8a6"],
+                    ["Transporte", "R$ 87,90", 16, "#3b82f6"],
+                  ].map(([nome, val, pct, cor], i) => (
+                    <div key={nome as string} className="flex flex-col gap-1.5">
+                      <div className="flex justify-between text-sm">
+                        <span className="font-semibold">{nome}</span>
+                        <span className="dinheiro text-nevoa-fraca">{val}</span>
+                      </div>
+                      <BarraInView pct={pct as number} cor={cor as string} atraso={0.1 + i * 0.12} />
+                    </div>
+                  ))}
+                </div>
+              </CardTilt>
+            </Revela>
+            {/* Anotar rápido + raposa */}
+            <Revela atraso={0.14}>
+              <CardTilt className="flex h-full flex-col items-center justify-center gap-2 rounded-3xl border border-linha bg-menta/60 p-6 text-center backdrop-blur">
+                <FoxMascote size={90} emocao="atento" />
+                <p className="font-display text-lg font-bold leading-tight">Anotar leva 10 segundos</p>
+                <p className="text-sm text-nevoa-fraca">valor, categoria, salvou.</p>
+              </CardTilt>
+            </Revela>
           </div>
         </section>
 
@@ -299,13 +320,15 @@ export function Landing() {
               <p className="max-w-md text-lg font-semibold text-menta-tinta/80">
                 Leva 2 minutos. A raposa faz o resto.
               </p>
-              <Link
-                href="/criar-conta"
-                onClick={comemorar}
-                className="flex h-14 items-center justify-center rounded-lg bg-white px-8 font-display text-lg font-bold text-verde-texto shadow-[0_12px_30px_-8px_rgba(5,46,22,0.4)] transition hover:-translate-y-0.5 active:scale-[.98]"
-              >
-                Criar minha conta
-              </Link>
+              <Magnetico>
+                <Link
+                  href="/criar-conta"
+                  onClick={comemorar}
+                  className="flex h-14 items-center justify-center rounded-lg bg-white px-8 font-display text-lg font-bold text-verde-texto shadow-[0_12px_30px_-8px_rgba(5,46,22,0.4)] transition hover:-translate-y-0.5 active:scale-[.98]"
+                >
+                  Criar minha conta
+                </Link>
+              </Magnetico>
             </div>
           </Revela>
         </section>
