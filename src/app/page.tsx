@@ -9,6 +9,7 @@ import { Marca } from "@/components/marca";
 import { NumeroDinheiro } from "@/components/numero-dinheiro";
 import { FoxMascote } from "@/components/fox-mascote";
 import { Aterrissar } from "@/components/aterrissar";
+import { Landing } from "@/components/landing";
 
 export default async function Home({
   searchParams,
@@ -18,35 +19,7 @@ export default async function Home({
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
-    return (
-      <main className="mx-auto flex min-h-svh w-full max-w-md flex-1 flex-col justify-center gap-10 px-6 py-16 pt-safe pb-safe">
-        <div className="flex flex-col items-center gap-5 text-center">
-          <FoxMascote size={128} seguirMouse />
-          <div>
-            <h1 className="font-display text-4xl font-extrabold tracking-tight">
-              Fox <span className="text-verde-texto">Finance</span>
-            </h1>
-            <p className="mt-2 text-nevoa-fraca">
-              Anote no susto, entenda com calma. Sua grana, do seu jeito.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-col gap-3">
-          <Link
-            href="/entrar"
-            className="flex h-13 items-center justify-center rounded-lg bg-verde px-5 font-display font-bold text-tinta shadow-[0_8px_22px_-8px_var(--verde)] transition hover:bg-verde-forte active:scale-[.98]"
-          >
-            Entrar
-          </Link>
-          <Link
-            href="/criar-conta"
-            className="flex h-13 items-center justify-center rounded-lg border border-linha bg-carvao px-5 font-semibold text-verde-texto transition hover:border-verde/50 active:scale-[.98]"
-          >
-            Criar conta
-          </Link>
-        </div>
-      </main>
-    );
+    return <Landing />;
   }
 
   const sp = await searchParams;
