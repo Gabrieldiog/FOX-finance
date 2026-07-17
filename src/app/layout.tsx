@@ -1,29 +1,50 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Hanken_Grotesk } from "next/font/google";
+import { Baloo_2, Nunito, Inter } from "next/font/google";
 import "./globals.css";
 import { RegistrarSW } from "@/components/registrar-sw";
+import { EfeitosMobile } from "@/components/efeitos-mobile";
 
-const display = Fraunces({
+// Baloo 2: títulos, saldo-herói, logo. Redonda, com "cara de raposa".
+const display = Baloo_2({
   variable: "--fonte-display",
   subsets: ["latin"],
-  weight: ["400", "600"],
+  weight: ["600", "700", "800"],
 });
 
-const sans = Hanken_Grotesk({
+// Nunito: corpo e UI. Arredondada, mas séria e muito legível.
+const sans = Nunito({
   variable: "--fonte-sans",
   subsets: ["latin"],
+  weight: ["400", "600", "700"],
+});
+
+// Inter: todo número de dinheiro, com algarismos que alinham em coluna.
+const num = Inter({
+  variable: "--fonte-num",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Fox — gestão financeira",
-  description: "Anote gastos e ganhos e veja o resumo da semana e do mês.",
+  title: "Fox Finance — sua grana, do seu jeito",
+  description: "Anote gastos e ganhos num toque e veja o resumo da semana e do mês.",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "Fox", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Fox Finance", statusBarStyle: "black-translucent" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#17130d",
+  width: "device-width",
+  initialScale: 1,
+  // Libera os env(safe-area-inset-*) do notch e da Dynamic Island.
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f0fdf4" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a120d" },
+  ],
 };
+
+// Aplica o tema salvo antes da pintura, sem piscar (FOUC).
+const scriptTema = `try{var t=localStorage.getItem('fox-tema');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}`;
 
 export default function RootLayout({
   children,
@@ -33,11 +54,16 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${display.variable} ${sans.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${display.variable} ${sans.variable} ${num.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: scriptTema }} />
+      </head>
       <body className="flex min-h-full flex-col">
         {children}
         <RegistrarSW />
+        <EfeitosMobile />
       </body>
     </html>
   );

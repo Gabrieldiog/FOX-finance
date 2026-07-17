@@ -1,64 +1,185 @@
 @import "tailwindcss";
 
-/* Identidade Fox — tema claro (secundário) */
+/* ─────────────────────────────────────────────────────────────
+   Fox Finance — identidade verde + branco.
+   Tema CLARO é o protagonista ("branco bem bonito"); o escuro é
+   um dark tingido do próprio verde, nunca cinza morto.
+   ───────────────────────────────────────────────────────────── */
+
 :root {
-  --breu: #faf5ec; /* fundo */
-  --carvao: #ffffff; /* superfície / card */
-  --linha: #ece2d1; /* borda */
-  --nevoa: #221a10; /* texto */
-  --nevoa-fraca: #8a7c64; /* texto fraco */
-  --ambar: #c9722e; /* acento (mais fechado no claro pra contraste) */
-  --entrou: #3f9d5f; /* entrada */
-  --saiu: #cf5a44; /* saída (terracota, não alarme) */
-  --tinta: #1a1206; /* texto sobre o âmbar */
+  --breu: #f0fdf4; /* fundo da página (off-white esverdeado) */
+  --carvao: #ffffff; /* superfície / card (branco puro = elevação sobre o mint) */
+  --menta: #dcfce7; /* superfície 2 / realce / hover */
+  --linha: #d7e7dc; /* borda hairline */
+  --nevoa: #0b1f17; /* texto principal (verde-quase-preto) */
+  --nevoa-fraca: #4a5d53; /* texto secundário (≥7:1, nunca apagado) */
+  --verde: #15803d; /* marca: botão primário, texto branco por cima (5:1) */
+  --verde-forte: #166534; /* hover do primário */
+  --verde-vivo: #22c55e; /* fills grandes (hero, gráficos) — texto ESCURO */
+  --verde-texto: #15803d; /* texto verde sobre branco */
+  --menta-tinta: #052e16; /* texto sobre verde vivo (10:1) */
+  --entrou: #16a34a; /* valores positivos */
+  --saiu: #dc2626; /* valores negativos / erro */
+  --tinta: #ffffff; /* texto sobre o botão da marca */
+  --sombra-card: 0 1px 2px rgb(6 78 59 / 0.05), 0 8px 24px rgb(6 78 59 / 0.06);
+  color-scheme: light;
 }
 
-/* Identidade Fox — tema escuro (protagonista) */
 @media (prefers-color-scheme: dark) {
   :root {
-    --breu: #17130d;
-    --carvao: #211a11;
-    --linha: #332a1c;
-    --nevoa: #f3ece0;
-    --nevoa-fraca: #a99b83;
-    --ambar: #e8913f;
-    --entrou: #6fbd83;
-    --saiu: #e0715a;
-    --tinta: #1a1206;
+    --breu: #0a120d;
+    --carvao: #16211b;
+    --menta: #1e2c24;
+    --linha: #23352b;
+    --nevoa: #e7f8ee;
+    --nevoa-fraca: #9db4a8;
+    --verde: #34d399;
+    --verde-forte: #6ee7b7;
+    --verde-vivo: #4ade80;
+    --verde-texto: #4ade80;
+    --menta-tinta: #052e16;
+    --entrou: #4ade80;
+    --saiu: #f87171;
+    --tinta: #052e16; /* verde claro carrega texto ESCURO */
+    --sombra-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.35);
+    color-scheme: dark;
   }
+}
+
+/* O toggle de tema do app vence o sistema, nos dois sentidos. */
+:root[data-theme="light"] {
+  --breu: #f0fdf4;
+  --carvao: #ffffff;
+  --menta: #dcfce7;
+  --linha: #d7e7dc;
+  --nevoa: #0b1f17;
+  --nevoa-fraca: #4a5d53;
+  --verde: #15803d;
+  --verde-forte: #166534;
+  --verde-vivo: #22c55e;
+  --verde-texto: #15803d;
+  --menta-tinta: #052e16;
+  --entrou: #16a34a;
+  --saiu: #dc2626;
+  --tinta: #ffffff;
+  --sombra-card: 0 1px 2px rgb(6 78 59 / 0.05), 0 8px 24px rgb(6 78 59 / 0.06);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --breu: #0a120d;
+  --carvao: #16211b;
+  --menta: #1e2c24;
+  --linha: #23352b;
+  --nevoa: #e7f8ee;
+  --nevoa-fraca: #9db4a8;
+  --verde: #34d399;
+  --verde-forte: #6ee7b7;
+  --verde-vivo: #4ade80;
+  --verde-texto: #4ade80;
+  --menta-tinta: #052e16;
+  --entrou: #4ade80;
+  --saiu: #f87171;
+  --tinta: #052e16;
+  --sombra-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.35);
+  color-scheme: dark;
 }
 
 @theme inline {
   --color-breu: var(--breu);
   --color-carvao: var(--carvao);
+  --color-menta: var(--menta);
   --color-linha: var(--linha);
   --color-nevoa: var(--nevoa);
   --color-nevoa-fraca: var(--nevoa-fraca);
-  --color-ambar: var(--ambar);
+  --color-verde: var(--verde);
+  --color-verde-forte: var(--verde-forte);
+  --color-verde-vivo: var(--verde-vivo);
+  --color-verde-texto: var(--verde-texto);
+  --color-menta-tinta: var(--menta-tinta);
   --color-entrou: var(--entrou);
   --color-saiu: var(--saiu);
   --color-tinta: var(--tinta);
+
   --font-display: var(--fonte-display);
   --font-sans: var(--fonte-sans);
+  --font-num: var(--fonte-num);
+
+  /* Tipografia fluida: escala com a tela sem breakpoint por texto.
+     Piso sempre ≥16px (evita zoom automático do iOS e serve a 50+). */
+  --text-fluida-sm: clamp(0.9375rem, 0.9rem + 0.2vw, 1rem);
+  --text-fluida-base: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  --text-fluida-lg: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --text-fluida-xl: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
+  --text-fluida-2xl: clamp(2.25rem, 1.6rem + 3vw, 3.75rem);
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+}
+
+/* ── Utilitárias de safe-area (notch do 13 Pro Max, Dynamic Island do 17 Pro Max).
+   Só valem porque o layout usa viewport-fit=cover. ── */
+@utility pt-safe {
+  padding-top: max(env(safe-area-inset-top), 0px);
+}
+@utility pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+@utility px-safe {
+  padding-left: max(env(safe-area-inset-left), 0px);
+  padding-right: max(env(safe-area-inset-right), 0px);
+}
+
+@utility text-fluida-base {
+  font-size: var(--text-fluida-base);
+}
+@utility text-fluida-lg {
+  font-size: var(--text-fluida-lg);
+}
+@utility text-fluida-xl {
+  font-size: var(--text-fluida-xl);
+}
+@utility text-fluida-2xl {
+  font-size: var(--text-fluida-2xl);
+}
+
+@utility tnum {
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 body {
   background: var(--breu);
   color: var(--nevoa);
   font-family: var(--fonte-sans), system-ui, sans-serif;
+  font-size: var(--text-fluida-base);
+  line-height: 1.6;
+  /* iOS: some o flash cinza no toque e trava o ajuste automático de texto. */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  /* Corta o pull-to-refresh / bounce do body (o scroll interno é que rola). */
+  overscroll-behavior-y: none;
 }
 
-.tnum {
-  font-variant-numeric: tabular-nums;
+/* Inputs com no mínimo 16px: abaixo disso o Safari dá zoom ao focar. */
+input,
+select,
+textarea {
+  font-size: max(16px, 1rem);
 }
 
-/* foco visível e discreto */
+/* Números de dinheiro sempre na fonte tabular. */
+.dinheiro {
+  font-family: var(--fonte-num), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
 :focus-visible {
-  outline: 2px solid var(--ambar);
+  outline: 2px solid var(--verde);
   outline-offset: 2px;
 }
 
-/* respeitar quem prefere menos movimento */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

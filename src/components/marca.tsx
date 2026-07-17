@@ -1,24 +1,32 @@
-// A marca do Fox: o raposo (o mesmo do ícone) + o nome em serifa.
+// A marca do Fox Finance: a raposa (versão estática, leve, do mascote) + o nome.
+// Pro header e outros cantos onde não precisa animar.
 export function FoxGlyph({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 512 512" className={className} aria-hidden="true">
-      <g transform="translate(256,262)">
-        <path d="M-150,-40 L-92,-150 L-40,-66 Z" fill="#e8913f" />
-        <path d="M150,-40 L92,-150 L40,-66 Z" fill="#e8913f" />
-        <path d="M-150,-40 L-92,-150 L-108,-92 Z" fill="#b5652a" />
-        <path d="M150,-40 L92,-150 L108,-92 Z" fill="#b5652a" />
-        <path
-          d="M-150,-46 C-70,-92 70,-92 150,-46 C150,60 70,150 0,178 C-70,150 -150,60 -150,-46 Z"
-          fill="#e8913f"
-        />
-        <path
-          d="M0,178 C-52,150 -96,84 -96,20 C-60,44 -30,52 0,52 C30,52 60,44 96,20 C96,84 52,150 0,178 Z"
-          fill="#f5d6b0"
-        />
-        <path d="M-80,-10 L-40,6 L-72,28 Z" fill="#241a0d" />
-        <path d="M80,-10 L40,6 L72,28 Z" fill="#241a0d" />
-        <path d="M0,88 L-17,68 L17,68 Z" fill="#241a0d" />
-      </g>
+    <svg viewBox="0 0 120 100" className={className} aria-hidden="true">
+      {/* Orelhas */}
+      <path d="M 26 8 L 51 36 L 33 46 Z" fill="#fb923c" stroke="#fb923c" strokeWidth="5" strokeLinejoin="round" />
+      <path d="M 31 18 L 45 35 L 34 40 Z" fill="#fdba74" strokeLinejoin="round" />
+      <path d="M 94 8 L 69 36 L 87 46 Z" fill="#fb923c" stroke="#fb923c" strokeWidth="5" strokeLinejoin="round" />
+      <path d="M 89 18 L 75 35 L 86 40 Z" fill="#fdba74" strokeLinejoin="round" />
+      {/* Rosto */}
+      <path
+        d="M 30 32 C 18 42 18 66 34 80 C 44 90 76 90 86 80 C 102 66 102 42 90 32 C 76 24 44 24 30 32 Z"
+        fill="#fb923c"
+        stroke="#fb923c"
+        strokeWidth="3"
+        strokeLinejoin="round"
+      />
+      <path d="M 30 62 L 19 66 L 30 74 Z" fill="#fff7ed" stroke="#fff7ed" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M 90 62 L 101 66 L 90 74 Z" fill="#fff7ed" stroke="#fff7ed" strokeWidth="3" strokeLinejoin="round" />
+      <path
+        d="M 60 48 C 42 48 33 62 37 74 C 41 86 52 90 60 90 C 68 90 79 86 83 74 C 87 62 78 48 60 48 Z"
+        fill="#fff7ed"
+      />
+      <circle cx="47" cy="54" r="5" fill="#241a12" />
+      <circle cx="45.4" cy="52" r="1.6" fill="#ffffff" />
+      <circle cx="73" cy="54" r="5" fill="#241a12" />
+      <circle cx="71.4" cy="52" r="1.6" fill="#ffffff" />
+      <path d="M 54 63 Q 60 61 66 63 Q 63 72 60 72 Q 57 72 54 63 Z" fill="#431407" />
     </svg>
   );
 }
@@ -26,8 +34,10 @@ export function FoxGlyph({ className }: { className?: string }) {
 export function Marca({ className }: { className?: string }) {
   return (
     <span className={`flex items-center gap-2 ${className ?? ""}`}>
-      <FoxGlyph className="h-6 w-6" />
-      <span className="font-display text-xl font-semibold tracking-tight">Fox</span>
+      <FoxGlyph className="h-7 w-7" />
+      <span className="font-display text-xl font-bold tracking-tight text-nevoa">
+        Fox <span className="text-verde-texto">Finance</span>
+      </span>
     </span>
   );
 }
