@@ -27,11 +27,10 @@ Banco próprio e isolado — dado financeiro privado não se mistura com nenhum 
 
 ## Rodando local
 
-Precisa de Node e Docker (pro Postgres).
+Precisa de Node e de uma connection string do Postgres (Supabase).
 
 ```bash
-cp .env.example .env.local          # ajuste e gere um segredo: openssl rand -base64 32
-docker compose up -d                # sobe o Postgres local
+cp .env.example .env.local          # cole a DATABASE_URL do Supabase e gere um segredo: openssl rand -base64 32
 npm install
 npm run dev                         # http://localhost:3000
 ```
@@ -40,4 +39,4 @@ Health check em `GET /api/health`.
 
 ## Status
 
-Em construção, backend antes do frontend. Já de pé: o esqueleto (Next 16 + Drizzle/PostgreSQL + Better Auth), a validação de ambiente e o health check. Próximo: autenticação por convite e o isolamento de dados por usuário.
+Em construção, backend antes do frontend. Já de pé: o esqueleto, a validação de ambiente, o health check e a **autenticação** (e-mail + senha com Argon2id, cadastro por convite, sessão em banco). Próximo: o isolamento de dados por usuário — com um teste provando que uma conta não vê a da outra — e o lançamento de gastos.
