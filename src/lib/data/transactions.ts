@@ -1,7 +1,7 @@
 import "server-only";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
-import { transaction } from "@/db/schema";
+import { category, transaction } from "@/db/schema";
 import { categoryIsUsable } from "./categories";
 
 export type NovaTransacao = {
@@ -10,7 +10,6 @@ export type NovaTransacao = {
   occurredAt: Date;
   categoryId?: string | null;
   description?: string | null;
-  paymentMethod?: string | null;
 };
 
 // REGRA DE OURO: sessionUserId vem SEMPRE da sessão no servidor, nunca de
@@ -23,6 +22,23 @@ export async function listTransactions(sessionUserId: string) {
     .from(transaction)
     .where(and(eq(transaction.userId, sessionUserId), isNull(transaction.deletedAt)))
     .orderBy(desc(transaction.occurredAt));
+}
+
+export async function listRecentTransactions(sessionUserId: string, limit = 20) {
+  return db
+    .select({
+      id: transaction.id,
+      type: transaction.type,
+      amountCents: transaction.amountCents,
+      description: transaction.description,
+      categoryName: category.name,
+      categoryColor: category.color,
+    })
+    .from(transaction)
+    .leftJoin(category, eq(category.id, transaction.categoryId))
+    .where(and(eq(transaction.userId, sessionUserId), isNull(transaction.deletedAt)))
+    .orderBy(desc(transaction.occurredAt))
+    .limit(limit);
 }
 
 export async function getTransaction(sessionUserId: string, id: string) {
@@ -41,11 +57,9 @@ export async function getTransaction(sessionUserId: string, id: string) {
 }
 
 export async function createTransaction(sessionUserId: string, input: NovaTransacao) {
-  // A categoria referenciada precisa ser global ou do próprio usuário (anti-IDOR).
   if (input.categoryId && !(await categoryIsUsable(sessionUserId, input.categoryId))) {
     throw new Error("categoria inválida");
   }
-  // Campos explícitos, sem spread: o cliente não injeta id/householdId/deletedAt/timestamps.
   const [row] = await db
     .insert(transaction)
     .values({
@@ -55,10 +69,37 @@ export async function createTransaction(sessionUserId: string, input: NovaTransa
       occurredAt: input.occurredAt,
       categoryId: input.categoryId ?? null,
       description: input.description ?? null,
-      paymentMethod: input.paymentMethod ?? null,
     })
     .returning();
   return row;
+}
+
+export async function updateTransaction(
+  sessionUserId: string,
+  id: string,
+  input: Pick<NovaTransacao, "type" | "amountCents" | "categoryId" | "description">,
+) {
+  if (input.categoryId && !(await categoryIsUsable(sessionUserId, input.categoryId))) {
+    throw new Error("categoria inválida");
+  }
+  const [row] = await db
+    .update(transaction)
+    .set({
+      type: input.type,
+      amountCents: input.amountCents,
+      categoryId: input.categoryId ?? null,
+      description: input.description ?? null,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(transaction.id, id),
+        eq(transaction.userId, sessionUserId),
+        isNull(transaction.deletedAt),
+      ),
+    )
+    .returning();
+  return row ?? null;
 }
 
 export async function softDeleteTransaction(sessionUserId: string, id: string) {

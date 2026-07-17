@@ -4,17 +4,27 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatBRL } from "@/lib/format";
-import { criarLancamento } from "@/lib/actions";
+import { criarLancamento, editarLancamento, excluirLancamento } from "@/lib/actions";
 
 type Cat = { id: string; name: string; type: string; color: string };
+type Inicial = {
+  id: string;
+  type: "expense" | "income";
+  amountCents: number;
+  categoryId: string | null;
+  description: string;
+};
 
-export function FormaLancamento({ categorias }: { categorias: Cat[] }) {
+export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; inicial?: Inicial }) {
   const router = useRouter();
-  const [type, setType] = useState<"expense" | "income">("expense");
-  const [cents, setCents] = useState(0);
-  const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [descricao, setDescricao] = useState("");
+  const editando = inicial != null;
+
+  const [type, setType] = useState<"expense" | "income">(inicial?.type ?? "expense");
+  const [cents, setCents] = useState(inicial?.amountCents ?? 0);
+  const [categoryId, setCategoryId] = useState<string | null>(inicial?.categoryId ?? null);
+  const [descricao, setDescricao] = useState(inicial?.description ?? "");
   const [salvando, setSalvando] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
   const cats = categorias.filter((c) => c.type === type);
@@ -31,8 +41,25 @@ export function FormaLancamento({ categorias }: { categorias: Cat[] }) {
     }
     setErro(null);
     setSalvando(true);
-    const res = await criarLancamento({ type, amountCents: cents, categoryId, description: descricao });
+    const dados = { type, amountCents: cents, categoryId, description: descricao };
+    const res = editando
+      ? await editarLancamento({ id: inicial!.id, ...dados })
+      : await criarLancamento(dados);
     setSalvando(false);
+    if (!res.ok) {
+      setErro(res.erro);
+      return;
+    }
+    router.push("/");
+    router.refresh();
+  }
+
+  async function excluir() {
+    if (!inicial) return;
+    setErro(null);
+    setExcluindo(true);
+    const res = await excluirLancamento(inicial.id);
+    setExcluindo(false);
     if (!res.ok) {
       setErro(res.erro);
       return;
@@ -99,14 +126,26 @@ export function FormaLancamento({ categorias }: { categorias: Cat[] }) {
 
       {erro && <p className="text-sm text-red-600">{erro}</p>}
 
-      <button
-        type="button"
-        onClick={salvar}
-        disabled={salvando}
-        className="mt-auto h-12 rounded-full bg-zinc-900 font-medium text-white disabled:opacity-60 dark:bg-white dark:text-zinc-900"
-      >
-        {salvando ? "Salvando…" : "Salvar"}
-      </button>
+      <div className="mt-auto flex flex-col gap-3">
+        <button
+          type="button"
+          onClick={salvar}
+          disabled={salvando || excluindo}
+          className="h-12 rounded-full bg-zinc-900 font-medium text-white disabled:opacity-60 dark:bg-white dark:text-zinc-900"
+        >
+          {salvando ? "Salvando…" : "Salvar"}
+        </button>
+        {editando && (
+          <button
+            type="button"
+            onClick={excluir}
+            disabled={salvando || excluindo}
+            className="h-11 rounded-full text-sm font-medium text-red-600 disabled:opacity-60"
+          >
+            {excluindo ? "Excluindo…" : "Excluir lançamento"}
+          </button>
+        )}
+      </div>
     </main>
   );
 }

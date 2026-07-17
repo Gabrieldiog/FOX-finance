@@ -2,6 +2,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { resumoDoPeriodo, type Periodo } from "@/lib/data/summary";
+import { listRecentTransactions } from "@/lib/data/transactions";
 import { formatBRL } from "@/lib/format";
 import { SairBotao } from "@/components/sair-botao";
 
@@ -34,6 +35,7 @@ export default async function Home({
   const sp = await searchParams;
   const periodo: Periodo = sp.periodo === "semana" ? "semana" : "mes";
   const r = await resumoDoPeriodo(session.user.id, periodo);
+  const ultimos = await listRecentTransactions(session.user.id, 15);
   const sobrou = r.saldo >= 0;
   const maior = Math.max(1, ...r.categorias.map((c) => c.total));
 
@@ -100,9 +102,34 @@ export default async function Home({
         </section>
       )}
 
+      {ultimos.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <p className="text-sm text-zinc-500">Últimos lançamentos</p>
+          {ultimos.map((t) => (
+            <Link
+              key={t.id}
+              href={`/editar/${t.id}`}
+              className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800"
+            >
+              <span className="flex items-center gap-2 text-sm">
+                <span
+                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: t.categoryColor ?? "#64748b" }}
+                />
+                {t.description || t.categoryName || "Sem categoria"}
+              </span>
+              <span className={`tabular-nums text-sm ${t.type === "income" ? "text-emerald-600" : "text-red-600"}`}>
+                {t.type === "income" ? "+" : "−"}
+                {formatBRL(t.amountCents)}
+              </span>
+            </Link>
+          ))}
+        </section>
+      )}
+
       <Link
         href="/novo"
-        className="mt-auto flex h-12 items-center justify-center rounded-full bg-zinc-900 font-medium text-white dark:bg-white dark:text-zinc-900"
+        className="sticky bottom-4 mt-auto flex h-12 items-center justify-center rounded-full bg-zinc-900 font-medium text-white shadow-lg dark:bg-white dark:text-zinc-900"
       >
         Novo lançamento
       </Link>
