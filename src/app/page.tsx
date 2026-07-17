@@ -43,7 +43,12 @@ export default async function Home({
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-6 py-10">
       <header className="flex items-center justify-between">
         <h1 className="text-xl font-semibold tracking-tight">Fox</h1>
-        <SairBotao />
+        <div className="flex items-center gap-3">
+          <Link href="/conta" className="text-sm text-zinc-500">
+            Conta
+          </Link>
+          <SairBotao />
+        </div>
       </header>
 
       <div className="flex rounded-full border border-zinc-200 p-0.5 text-sm dark:border-zinc-800">

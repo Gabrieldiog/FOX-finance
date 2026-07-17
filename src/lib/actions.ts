@@ -1,9 +1,12 @@
 "use server";
 
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { user } from "@/db/schema";
 import {
   createTransaction,
   softDeleteTransaction,
@@ -83,5 +86,14 @@ export async function excluirLancamento(id: string) {
   if (!r) return { ok: false as const, erro: "Lançamento não encontrado." };
 
   revalidatePath("/");
+  return { ok: true as const };
+}
+
+// LGPD (art. 18): exclusão real. A cascata apaga transações, sessões, contas
+// de autenticação e categorias do usuário.
+export async function excluirConta() {
+  const userId = await sessaoUserId();
+  if (!userId) return { ok: false as const, erro: "Não autenticado." };
+  await db.delete(user).where(eq(user.id, userId));
   return { ok: true as const };
 }

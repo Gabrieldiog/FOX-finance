@@ -71,6 +71,13 @@ export default function CriarConta() {
           {carregando ? "Criando…" : "Criar conta"}
         </button>
       </form>
+      <p className="text-xs text-zinc-500">
+        Ao criar conta, você concorda com a{" "}
+        <Link href="/privacidade" className="underline">
+          política de privacidade
+        </Link>
+        .
+      </p>
       <p className="text-sm text-zinc-500">
         Já tem conta?{" "}
         <Link href="/entrar" className="underline">
