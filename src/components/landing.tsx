@@ -12,6 +12,7 @@ import { FoxMascote } from "@/components/fox-mascote";
 import { FoxGlyph } from "@/components/marca";
 import { FundoVivo } from "@/components/fundo-vivo";
 import { CardTilt, ContadorInView, BarraInView, Magnetico } from "@/components/efeitos";
+import { RaposaCanvas } from "@/components/raposa-3d/raposa-canvas";
 
 const SUAVE = [0.22, 1, 0.36, 1] as const;
 
@@ -154,7 +155,11 @@ export function Landing() {
             transition={{ type: "spring", stiffness: 160, damping: 18, delay: 0.2 }}
             className="flex justify-center"
           >
-            <FoxMascote size={300} seguirMouse />
+            {/* A raposa 3D, na moldura verde escura que dá o volume dela */}
+            <div className="relative flex items-center justify-center overflow-hidden rounded-[2.5rem] bg-[#08160e] p-2 shadow-[0_30px_70px_-30px_rgba(6,78,59,0.55)]">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(34,197,94,0.22),transparent_62%)]" />
+              <RaposaCanvas size={360} />
+            </div>
           </m.div>
         </section>
 
