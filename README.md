@@ -27,11 +27,10 @@ Banco próprio e isolado — dado financeiro privado não se mistura com nenhum 
 
 ## Rodando local
 
-Precisa de Node e Docker (pro Postgres).
+Precisa de Node e de uma connection string do Postgres (Supabase).
 
 ```bash
-cp .env.example .env.local          # ajuste e gere um segredo: openssl rand -base64 32
-docker compose up -d                # sobe o Postgres local
+cp .env.example .env.local          # cole a DATABASE_URL do Supabase e gere um segredo: openssl rand -base64 32
 npm install
 npm run dev                         # http://localhost:3000
 ```
