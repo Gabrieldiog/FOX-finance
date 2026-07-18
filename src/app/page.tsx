@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { resumoDoPeriodo, type Periodo } from "@/lib/data/summary";
 import { listRecentTransactions } from "@/lib/data/transactions";
+import { materializarRecorrencias } from "@/lib/data/recorrencias";
 import { formatBRL, agruparPorDia } from "@/lib/format";
 import { SairBotao } from "@/components/sair-botao";
 import { FoxGlyph } from "@/components/marca";
@@ -22,6 +23,9 @@ export default async function Home({
   if (!session) {
     return <LandingV2 />;
   }
+
+  // Ao abrir o app, cria os lançamentos recorrentes que já venceram (idempotente).
+  await materializarRecorrencias(session.user.id);
 
   const sp = await searchParams;
   const periodo: Periodo = sp.periodo === "semana" ? "semana" : "mes";

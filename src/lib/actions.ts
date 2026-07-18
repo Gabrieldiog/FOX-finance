@@ -14,11 +14,19 @@ import {
 } from "@/lib/data/transactions";
 import {
   categoryIsExpenseUsable,
+  categoryIsUsable,
   countUserCategories,
   createCategory,
   deleteCategory,
 } from "@/lib/data/categories";
 import { deleteBudget, setBudget } from "@/lib/data/budgets";
+import {
+  createRecurring,
+  deleteRecurring,
+  materializarRecorrencias,
+  setRecurringActive,
+} from "@/lib/data/recorrencias";
+import { mesCorrenteSP } from "@/lib/data/summary";
 import {
   corValida,
   formaPagamentoValida,
@@ -215,6 +223,78 @@ export async function removerMeta(categoryId: string) {
   if (!r) return { ok: false as const, erro: "Meta não encontrada." };
   revalidatePath("/metas");
   revalidatePath("/");
+  return { ok: true as const };
+}
+
+const criarRecorrenciaSchema = z.object({
+  type: z.enum(["expense", "income"]),
+  amountCents: z.number().int().positive().max(100_000_000_00),
+  categoryId: z.string().uuid().nullish(),
+  description: z.string().trim().max(200).optional(),
+  paymentMethod: z.string().refine(formaPagamentoValida, "Forma de pagamento inválida.").nullish(),
+  dayOfMonth: z.number().int().min(1).max(31),
+});
+
+export async function criarRecorrencia(raw: unknown) {
+  const userId = await sessaoUserId();
+  if (!userId) return { ok: false as const, erro: "Não autenticado." };
+
+  const parsed = criarRecorrenciaSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false as const, erro: "Dados inválidos." };
+
+  if (parsed.data.categoryId && !(await categoryIsUsable(userId, parsed.data.categoryId))) {
+    return { ok: false as const, erro: "Categoria inválida." };
+  }
+
+  const { ano, mes } = mesCorrenteSP();
+  const startYm = `${ano}-${String(mes).padStart(2, "0")}`;
+
+  try {
+    await createRecurring(userId, {
+      type: parsed.data.type,
+      amountCents: parsed.data.amountCents,
+      categoryId: parsed.data.categoryId ?? null,
+      description: parsed.data.description || null,
+      paymentMethod: parsed.data.paymentMethod ?? null,
+      dayOfMonth: parsed.data.dayOfMonth,
+      startYm,
+    });
+    // Já gera a ocorrência deste mês se o dia marcado tiver passado.
+    await materializarRecorrencias(userId);
+  } catch {
+    return { ok: false as const, erro: "Não foi possível salvar a recorrência." };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/recorrencias");
+  return { ok: true as const };
+}
+
+export async function definirRecorrenciaAtiva(id: string, ativa: boolean) {
+  const userId = await sessaoUserId();
+  if (!userId) return { ok: false as const, erro: "Não autenticado." };
+  if (!z.string().uuid().safeParse(id).success) return { ok: false as const, erro: "Inválido." };
+
+  const querAtiva = ativa === true;
+  const r = await setRecurringActive(userId, id, querAtiva);
+  if (!r) return { ok: false as const, erro: "Recorrência não encontrada." };
+  if (querAtiva) await materializarRecorrencias(userId); // retomou: pode ter atrasados
+
+  revalidatePath("/");
+  revalidatePath("/recorrencias");
+  return { ok: true as const };
+}
+
+export async function excluirRecorrencia(id: string) {
+  const userId = await sessaoUserId();
+  if (!userId) return { ok: false as const, erro: "Não autenticado." };
+  if (!z.string().uuid().safeParse(id).success) return { ok: false as const, erro: "Inválido." };
+
+  const r = await deleteRecurring(userId, id);
+  if (!r) return { ok: false as const, erro: "Recorrência não encontrada." };
+
+  revalidatePath("/");
+  revalidatePath("/recorrencias");
   return { ok: true as const };
 }
 

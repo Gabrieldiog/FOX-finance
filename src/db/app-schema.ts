@@ -1,4 +1,15 @@
-import { pgTable, text, timestamp, bigint, uuid, index, check, unique } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  timestamp,
+  bigint,
+  integer,
+  boolean,
+  uuid,
+  index,
+  check,
+  unique,
+} from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { user } from "./auth-schema";
 
@@ -19,6 +30,37 @@ export const category = pgTable(
   ],
 );
 
+// Recorrências: o "molde" de um lançamento que se repete todo mês num certo dia.
+// Não guarda saldo nem gera nada sozinho no banco; quem materializa os
+// lançamentos (idempotente) é o app quando o usuário abre. start_ym marca a
+// partir de que mês vale ("YYYY-MM"); day_of_month é o dia (1–31, com clamp em
+// mês curto na hora de gerar).
+export const recurring = pgTable(
+  "recurring",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    type: text("type").notNull(), // "expense" | "income"
+    amountCents: bigint("amount_cents", { mode: "number" }).notNull(),
+    categoryId: uuid("category_id").references(() => category.id, { onDelete: "set null" }),
+    description: text("description"),
+    paymentMethod: text("payment_method"),
+    dayOfMonth: integer("day_of_month").notNull(),
+    active: boolean("active").notNull().default(true),
+    startYm: text("start_ym").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("recurring_user_idx").on(t.userId),
+    check("recurring_type_valido", sql`${t.type} in ('expense','income')`),
+    check("recurring_dia_valido", sql`${t.dayOfMonth} between 1 and 31`),
+    check("recurring_valor_positivo", sql`${t.amountCents} > 0`),
+  ],
+);
+
 // Lançamentos. Imutável no espírito: editar/excluir vira soft-delete (deleted_at).
 // O saldo é sempre derivado por agregação, nunca um campo guardado aqui.
 export const transaction = pgTable(
@@ -34,6 +76,11 @@ export const transaction = pgTable(
     categoryId: uuid("category_id").references(() => category.id, { onDelete: "set null" }),
     description: text("description"),
     paymentMethod: text("payment_method"),
+    // Preenchido quando o lançamento nasceu de uma recorrência (rastro + dedupe).
+    recurringId: uuid("recurring_id").references(() => recurring.id, { onDelete: "set null" }),
+    // Mês da ocorrência ("YYYY-MM"): junto do recurring_id dá o UNIQUE que impede
+    // duplicar a mesma ocorrência (inclusive sob concorrência). Nulo no lançamento manual.
+    occurrenceYm: text("occurrence_ym"),
     // Reservado pra compartilhamento futuro (fase 2); sem uso no MVP.
     householdId: uuid("household_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -43,6 +90,11 @@ export const transaction = pgTable(
   (t) => [
     // user_id primeiro no índice: toda consulta começa filtrando pelo dono.
     index("transaction_user_idx").on(t.userId, t.occurredAt),
+    // No máximo UMA ocorrência por molde por mês — a garantia de "nunca duplicar"
+    // mora no banco, então nem duas cargas concorrentes conseguem furar. Os
+    // lançamentos manuais têm (recurring_id, occurrence_ym) = (null, null); nulos
+    // não colidem entre si, então não atrapalham.
+    unique("transaction_recorrencia_unica").on(t.recurringId, t.occurrenceYm),
     // Valor sempre positivo (o sinal fica por conta do type) e type válido.
     check("transaction_valor_positivo", sql`${t.amountCents} > 0`),
     check("transaction_type_valido", sql`${t.type} in ('expense','income','transfer')`),

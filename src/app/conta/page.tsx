@@ -40,6 +40,14 @@ export default async function Conta() {
         }))}
       />
 
+      <Link
+        href="/recorrencias"
+        className="flex h-13 items-center justify-between rounded-xl border border-pauta bg-feltro-alto px-4 font-medium text-creme transition hover:border-brilho/50 active:scale-[.98]"
+      >
+        Lançamentos recorrentes
+        <span className="font-serif text-brilho">→</span>
+      </Link>
+
       <a
         href="/api/export"
         className="flex h-13 items-center justify-center rounded-xl border border-pauta bg-feltro-alto font-medium text-brilho transition hover:border-brilho/50 active:scale-[.98]"
