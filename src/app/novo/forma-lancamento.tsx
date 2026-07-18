@@ -4,7 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatBRL, formatDiaSP } from "@/lib/format";
-import { criarLancamento, editarLancamento, excluirLancamento } from "@/lib/actions";
+import {
+  criarLancamento,
+  criarRecorrencia,
+  editarLancamento,
+  excluirLancamento,
+} from "@/lib/actions";
 import { FORMAS_PAGAMENTO } from "@/lib/categorias";
 import { IconeCategoria } from "@/components/icone-categoria";
 import { NovaCategoria, type Categoria } from "@/components/nova-categoria";
@@ -43,6 +48,8 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
     inicial ? new Date(inicial.occurredAt) : null,
   );
   const [paymentMethod, setPaymentMethod] = useState<string | null>(inicial?.paymentMethod ?? null);
+  const [recorrente, setRecorrente] = useState(false);
+  const [diaDoMes, setDiaDoMes] = useState(1);
   const [salvando, setSalvando] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -63,6 +70,12 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
     setCriandoCat(false);
   }
 
+  function alternarRecorrente() {
+    const novo = !recorrente;
+    setRecorrente(novo);
+    if (novo) setDiaDoMes(new Date().getDate()); // default = hoje (handler, fora do render)
+  }
+
   async function salvar() {
     if (cents <= 0) {
       setErro("Digite um valor.");
@@ -70,6 +83,28 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
     }
     setErro(null);
     setSalvando(true);
+
+    // Recorrência: cria o molde (e o backend já gera a ocorrência deste mês se
+    // o dia marcado passou). A data avulsa não se aplica aqui.
+    if (recorrente && !editando) {
+      const res = await criarRecorrencia({
+        type,
+        amountCents: cents,
+        categoryId,
+        description: descricao,
+        paymentMethod,
+        dayOfMonth: diaDoMes,
+      });
+      setSalvando(false);
+      if (!res.ok) {
+        setErro(res.erro);
+        return;
+      }
+      router.push("/");
+      router.refresh();
+      return;
+    }
+
     // Só aqui (num handler, fora do render) o relógio é lido.
     const quando =
       modo === "hoje"
@@ -187,37 +222,82 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
         </button>
       </div>
 
-      <div>
-        <p className="mb-2 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-sage">Quando</p>
-        <div className="flex gap-2">
-          <button type="button" onClick={() => setModo("hoje")} className={chipData(modo === "hoje")}>
-            Hoje
-          </button>
-          <button
-            type="button"
-            onClick={() => setModo("ontem")}
-            className={chipData(modo === "ontem")}
+      {!editando && (
+        <button
+          type="button"
+          onClick={alternarRecorrente}
+          role="switch"
+          aria-checked={recorrente}
+          className="flex items-center justify-between rounded-xl border border-pauta bg-feltro-alto px-4 py-3"
+        >
+          <span className="text-sm font-medium text-creme">
+            Repete todo mês
+            <span className="ml-2 font-normal text-sage">{ganho ? "(ganho fixo)" : "(gasto fixo)"}</span>
+          </span>
+          <span
+            className={`flex h-6 w-11 items-center rounded-full p-0.5 transition ${recorrente ? "bg-brilho" : "bg-pauta"}`}
           >
-            Ontem
-          </button>
-          <label className={`${chipData(modo === "outro")} relative cursor-pointer`}>
-            {modo === "outro" && dataOutra ? formatDiaSP(dataOutra) : "Outra"}
-            <input
-              type="date"
-              aria-label="Escolher data"
-              value={dataOutra ? paraInput(dataOutra) : ""}
-              onChange={(e) => {
-                const [y, m, d] = e.target.value.split("-").map(Number);
-                if (y && m && d) {
-                  setDataOutra(new Date(y, m - 1, d, 12));
-                  setModo("outro");
-                }
-              }}
-              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            <span
+              className={`h-5 w-5 rounded-full bg-creme transition-transform ${recorrente ? "translate-x-5" : ""}`}
             />
-          </label>
+          </span>
+        </button>
+      )}
+
+      {recorrente ? (
+        <div>
+          <p className="mb-2 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-sage">
+            Repete todo dia
+          </p>
+          <div className="flex h-13 items-center gap-3 rounded-xl border border-pauta bg-feltro-alto px-4">
+            <select
+              value={diaDoMes}
+              onChange={(e) => setDiaDoMes(Number(e.target.value))}
+              aria-label="Dia do mês"
+              className="rounded-lg border border-pauta bg-feltro px-3 py-1.5 font-serif text-lg text-creme outline-none focus:border-brilho"
+            >
+              {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+            <span className="text-sm text-sage">de cada mês</span>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div>
+          <p className="mb-2 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-sage">Quando</p>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => setModo("hoje")} className={chipData(modo === "hoje")}>
+              Hoje
+            </button>
+            <button
+              type="button"
+              onClick={() => setModo("ontem")}
+              className={chipData(modo === "ontem")}
+            >
+              Ontem
+            </button>
+            <label className={`${chipData(modo === "outro")} relative cursor-pointer`}>
+              {modo === "outro" && dataOutra ? formatDiaSP(dataOutra) : "Outra"}
+              <input
+                type="date"
+                aria-label="Escolher data"
+                value={dataOutra ? paraInput(dataOutra) : ""}
+                onChange={(e) => {
+                  const [y, m, d] = e.target.value.split("-").map(Number);
+                  if (y && m && d) {
+                    setDataOutra(new Date(y, m - 1, d, 12));
+                    setModo("outro");
+                  }
+                }}
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              />
+            </label>
+          </div>
+        </div>
+      )}
 
       <div>
         <p className="mb-2 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-sage">
@@ -261,7 +341,7 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
           disabled={salvando || excluindo}
           className="flex h-13 items-center justify-center rounded-xl bg-brilho font-serif text-lg font-semibold text-feltro transition active:scale-[.98] disabled:opacity-60"
         >
-          {salvando ? "Salvando…" : "Salvar"}
+          {salvando ? "Salvando…" : recorrente ? "Criar recorrência" : "Salvar"}
         </button>
         {editando && (
           <button
