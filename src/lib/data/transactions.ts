@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, ilike, isNull, or, type SQL } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, isNull, lt, ne, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { category, transaction } from "@/db/schema";
 import { categoryIsUsable } from "./categories";
@@ -91,6 +91,44 @@ export async function searchTransactions(
     .where(and(...conds))
     .orderBy(desc(transaction.occurredAt))
     .limit(limite + 1);
+}
+
+// Todos os lançamentos de um mês (fuso de São Paulo), pro relatório em .txt.
+export async function listTransactionsDoMes(
+  sessionUserId: string,
+  ano: number,
+  mes: number,
+): Promise<LancamentoLista[]> {
+  const proxAno = mes === 12 ? ano + 1 : ano;
+  const proxMes = mes === 12 ? 1 : mes + 1;
+  const inicio = sql`(make_timestamp(${ano}, ${mes}, 1, 0, 0, 0) at time zone 'America/Sao_Paulo')`;
+  const fim = sql`(make_timestamp(${proxAno}, ${proxMes}, 1, 0, 0, 0) at time zone 'America/Sao_Paulo')`;
+  return db
+    .select({
+      id: transaction.id,
+      type: transaction.type,
+      amountCents: transaction.amountCents,
+      occurredAt: transaction.occurredAt,
+      paymentMethod: transaction.paymentMethod,
+      description: transaction.description,
+      categoryName: category.name,
+      categoryIcon: category.icon,
+      categoryColor: category.color,
+    })
+    .from(transaction)
+    .leftJoin(category, eq(category.id, transaction.categoryId))
+    .where(
+      and(
+        eq(transaction.userId, sessionUserId),
+        isNull(transaction.deletedAt),
+        // Fora transferências (dinheiro entre contas próprias) — igual às
+        // agregações do resumo, pra as duas metades do .txt reconciliarem.
+        ne(transaction.type, "transfer"),
+        gte(transaction.occurredAt, inicio),
+        lt(transaction.occurredAt, fim),
+      ),
+    )
+    .orderBy(desc(transaction.occurredAt));
 }
 
 export async function getTransaction(sessionUserId: string, id: string) {
