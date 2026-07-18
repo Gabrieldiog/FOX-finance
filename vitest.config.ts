@@ -11,5 +11,11 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
+    // Os testes são de integração contra UM banco remoto compartilhado (Supabase
+    // pooler, conexão max:1 por arquivo). Rodar os arquivos em paralelo criava
+    // contenção e estourava o timeout; em série não há disputa. A folga cobre a
+    // latência de rede da rodada.
+    fileParallelism: false,
+    testTimeout: 20_000,
   },
 });
