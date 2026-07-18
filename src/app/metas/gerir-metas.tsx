@@ -99,7 +99,7 @@ export function GerirMetas({ categorias, metas }: { categorias: Cat[]; metas: Me
                     onClick={() => remover(m.categoryId)}
                     disabled={removendo === m.categoryId}
                     aria-label={`Remover meta de ${m.name}`}
-                    className="flex h-7 w-7 items-center justify-center rounded-full text-lg leading-none text-sage transition hover:text-alerta disabled:opacity-50"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg leading-none text-sage transition hover:text-alerta disabled:opacity-50"
                   >
                     ×
                   </button>
