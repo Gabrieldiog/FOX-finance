@@ -37,6 +37,23 @@ export async function listUserCategories(sessionUserId: string) {
     .orderBy(category.name);
 }
 
+// Como categoryIsUsable, mas só aceita categoria de GASTO — pras metas, que são
+// teto de despesa.
+export async function categoryIsExpenseUsable(sessionUserId: string, categoryId: string) {
+  const [row] = await db
+    .select({ id: category.id })
+    .from(category)
+    .where(
+      and(
+        eq(category.id, categoryId),
+        eq(category.type, "expense"),
+        or(isNull(category.userId), eq(category.userId, sessionUserId)),
+      ),
+    )
+    .limit(1);
+  return row != null;
+}
+
 // Quantas categorias próprias o usuário tem (as globais não contam pro teto).
 export async function countUserCategories(sessionUserId: string) {
   const [row] = await db

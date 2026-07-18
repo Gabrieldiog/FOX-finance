@@ -13,10 +13,12 @@ import {
   updateTransaction,
 } from "@/lib/data/transactions";
 import {
+  categoryIsExpenseUsable,
   countUserCategories,
   createCategory,
   deleteCategory,
 } from "@/lib/data/categories";
+import { deleteBudget, setBudget } from "@/lib/data/budgets";
 import {
   corValida,
   formaPagamentoValida,
@@ -172,6 +174,47 @@ export async function excluirCategoria(id: string) {
   revalidatePath("/");
   revalidatePath("/novo");
   revalidatePath("/conta");
+  return { ok: true as const };
+}
+
+const definirMetaSchema = z.object({
+  categoryId: z.string().uuid(),
+  limitCents: z.number().int().positive().max(100_000_000_00),
+});
+
+export async function definirMeta(raw: unknown) {
+  const userId = await sessaoUserId();
+  if (!userId) return { ok: false as const, erro: "Não autenticado." };
+
+  const parsed = definirMetaSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false as const, erro: "Dados inválidos." };
+
+  // A categoria precisa ser de gasto e usável pelo dono (não a privada de outro).
+  if (!(await categoryIsExpenseUsable(userId, parsed.data.categoryId))) {
+    return { ok: false as const, erro: "Categoria inválida." };
+  }
+
+  try {
+    await setBudget(userId, parsed.data.categoryId, parsed.data.limitCents);
+    revalidatePath("/metas");
+    revalidatePath("/");
+    return { ok: true as const };
+  } catch {
+    return { ok: false as const, erro: "Não foi possível salvar a meta." };
+  }
+}
+
+export async function removerMeta(categoryId: string) {
+  const userId = await sessaoUserId();
+  if (!userId) return { ok: false as const, erro: "Não autenticado." };
+  if (!z.string().uuid().safeParse(categoryId).success) {
+    return { ok: false as const, erro: "Inválido." };
+  }
+
+  const r = await deleteBudget(userId, categoryId);
+  if (!r) return { ok: false as const, erro: "Meta não encontrada." };
+  revalidatePath("/metas");
+  revalidatePath("/");
   return { ok: true as const };
 }
 

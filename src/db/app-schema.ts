@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, bigint, uuid, index, check } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, bigint, uuid, index, check, unique } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { user } from "./auth-schema";
 
@@ -46,5 +46,29 @@ export const transaction = pgTable(
     // Valor sempre positivo (o sinal fica por conta do type) e type válido.
     check("transaction_valor_positivo", sql`${t.amountCents} > 0`),
     check("transaction_type_valido", sql`${t.type} in ('expense','income','transfer')`),
+  ],
+);
+
+// Metas: um limite mensal de gasto por categoria (recorrente, não preso a um mês).
+// O progresso é sempre derivado somando os lançamentos do mês; aqui só mora o teto.
+export const budget = pgTable(
+  "budget",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    categoryId: uuid("category_id")
+      .notNull()
+      .references(() => category.id, { onDelete: "cascade" }),
+    limitCents: bigint("limit_cents", { mode: "number" }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("budget_user_idx").on(t.userId),
+    // Uma meta por (dono, categoria): definir de novo é atualizar, não duplicar.
+    unique("budget_user_category").on(t.userId, t.categoryId),
+    check("budget_limit_positivo", sql`${t.limitCents} > 0`),
   ],
 );
