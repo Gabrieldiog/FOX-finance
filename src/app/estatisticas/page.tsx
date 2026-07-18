@@ -230,23 +230,29 @@ export default async function Estatisticas({
       </div>
 
       <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-pauta bg-feltro-alto">
-        <div className="border-r border-pauta p-4">
+        <div className="min-w-0 border-r border-pauta p-3.5">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-sage">Entrou</p>
-          <p className="mt-1 font-serif text-[0.82rem] leading-tight tnum text-brilho">{formatBRL(atual.entrou)}</p>
+          <p className="mt-1 font-serif text-[clamp(0.72rem,3vw,0.82rem)] leading-tight tnum text-brilho">
+            {formatBRL(atual.entrou)}
+          </p>
           <div className="mt-1">
             <Delta atual={atual.entrou} anterior={ant.entrou} maiorEhBom />
           </div>
         </div>
-        <div className="border-r border-pauta p-4">
+        <div className="min-w-0 border-r border-pauta p-3.5">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-sage">Saiu</p>
-          <p className="mt-1 font-serif text-[0.82rem] leading-tight tnum text-alerta">{formatBRL(atual.saiu)}</p>
+          <p className="mt-1 font-serif text-[clamp(0.72rem,3vw,0.82rem)] leading-tight tnum text-alerta">
+            {formatBRL(atual.saiu)}
+          </p>
           <div className="mt-1">
             <Delta atual={atual.saiu} anterior={ant.saiu} maiorEhBom={false} />
           </div>
         </div>
-        <div className="p-4">
+        <div className="min-w-0 p-3.5">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-sage">Saldo</p>
-          <p className="mt-1 font-serif text-[0.82rem] leading-tight tnum text-creme">{formatBRL(atual.saldo)}</p>
+          <p className="mt-1 font-serif text-[clamp(0.72rem,3vw,0.82rem)] leading-tight tnum text-creme">
+            {formatBRL(atual.saldo)}
+          </p>
           <div className="mt-1">
             <Delta atual={atual.saldo} anterior={ant.saldo} maiorEhBom />
           </div>

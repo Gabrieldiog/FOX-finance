@@ -87,17 +87,23 @@ export default async function Home({
 
       {/* Entrou / Saiu / Saldo, divididos por pauta fina. */}
       <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-pauta bg-feltro-alto">
-        <div className="border-r border-pauta p-4">
+        <div className="min-w-0 border-r border-pauta p-3.5">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-sage">Entrou</p>
-          <p className="mt-1 font-serif text-[0.82rem] leading-tight tnum text-brilho">{formatBRL(r.entrou)}</p>
+          <p className="mt-1 font-serif text-[clamp(0.72rem,3vw,0.82rem)] leading-tight tnum text-brilho">
+            {formatBRL(r.entrou)}
+          </p>
         </div>
-        <div className="border-r border-pauta p-4">
+        <div className="min-w-0 border-r border-pauta p-3.5">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-sage">Saiu</p>
-          <p className="mt-1 font-serif text-[0.82rem] leading-tight tnum text-alerta">{formatBRL(r.saiu)}</p>
+          <p className="mt-1 font-serif text-[clamp(0.72rem,3vw,0.82rem)] leading-tight tnum text-alerta">
+            {formatBRL(r.saiu)}
+          </p>
         </div>
-        <div className="p-4">
+        <div className="min-w-0 p-3.5">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-sage">Saldo</p>
-          <p className="mt-1 font-serif text-[0.82rem] leading-tight tnum text-creme">{formatBRL(r.saldo)}</p>
+          <p className="mt-1 font-serif text-[clamp(0.72rem,3vw,0.82rem)] leading-tight tnum text-creme">
+            {formatBRL(r.saldo)}
+          </p>
         </div>
       </div>
 
