@@ -185,6 +185,14 @@ export default async function Estatisticas({
         <span className="w-12" />
       </header>
 
+      <Link
+        href="/metas"
+        className="flex items-center justify-between rounded-2xl border border-pauta bg-feltro-alto px-5 py-3.5 text-sm font-medium transition hover:border-brilho/50"
+      >
+        <span>Metas &amp; projeção do mês</span>
+        <span className="font-serif text-brilho">→</span>
+      </Link>
+
       <div className="flex rounded-full border border-pauta bg-feltro-alto p-1 font-mono text-xs uppercase tracking-[0.12em]">
         <Link href="/estatisticas?g=mes" scroll={false} className={abaClasse(granularidade === "mes")}>
           Por mês
