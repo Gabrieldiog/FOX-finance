@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Baloo_2, Nunito, Inter } from "next/font/google";
+import { Baloo_2, Nunito, Inter, Fraunces, Hanken_Grotesk, Spline_Sans_Mono } from "next/font/google";
 import "./globals.css";
 import { RegistrarSW } from "@/components/registrar-sw";
 import { EfeitosMobile } from "@/components/efeitos-mobile";
@@ -23,6 +23,25 @@ const num = Inter({
   variable: "--fonte-num",
   subsets: ["latin"],
   weight: ["500", "600", "700"],
+});
+
+// Redesign "Caderneta Verde": Fraunces (serifa editorial), Hanken Grotesk (corpo),
+// Spline Sans Mono (rótulos de razão / metadados).
+const serif = Fraunces({
+  variable: "--fonte-serif",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+const grotesk = Hanken_Grotesk({
+  variable: "--fonte-grotesk",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+const mono = Spline_Sans_Mono({
+  variable: "--fonte-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -55,7 +74,7 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={`${display.variable} ${sans.variable} ${num.variable} h-full antialiased`}
+      className={`${display.variable} ${sans.variable} ${num.variable} ${serif.variable} ${grotesk.variable} ${mono.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: scriptTema }} />

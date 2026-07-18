@@ -105,6 +105,19 @@
   --font-sans: var(--fonte-sans);
   --font-num: var(--fonte-num);
 
+  /* Redesign "Caderneta Verde" (landing) — verde-feltro dominante + creme + brasa. */
+  --color-feltro: #0f241a; /* canvas (verde-feltro escuro) */
+  --color-feltro-alto: #16321f; /* superfície levantada */
+  --color-feltro-topo: #1d3f28; /* card mais alto */
+  --color-pauta: #274b31; /* pauta/hairline verde */
+  --color-creme: #f1efe3; /* texto */
+  --color-sage: #9db4a8; /* texto mudo */
+  --color-brilho: #38d07d; /* verde vivo de acento/CTA */
+  --color-brasa: #f4841f; /* laranja da raposa, acento mínimo */
+  --font-serif: var(--fonte-serif);
+  --font-grotesk: var(--fonte-grotesk);
+  --font-mono: var(--fonte-mono);
+
   /* Tipografia fluida: escala com a tela sem breakpoint por texto.
      Piso sempre ≥16px (evita zoom automático do iOS e serve a 50+). */
   --text-fluida-sm: clamp(0.9375rem, 0.9rem + 0.2vw, 1rem);
