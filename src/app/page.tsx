@@ -44,6 +44,9 @@ export default async function Home({
           </span>
         </span>
         <div className="flex items-center gap-4 font-mono text-xs uppercase tracking-[0.14em] text-sage">
+          <Link href="/estatisticas" className="transition hover:text-creme">
+            Análise
+          </Link>
           <Link href="/conta" className="transition hover:text-creme">
             Conta
           </Link>
