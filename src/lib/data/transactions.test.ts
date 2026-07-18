@@ -6,6 +6,7 @@ import {
   createTransaction,
   getTransaction,
   listTransactions,
+  searchTransactions,
   softDeleteTransaction,
   updateTransaction,
 } from "./transactions";
@@ -127,4 +128,34 @@ test("mass assignment: campos extras do input são ignorados", async () => {
   expect(tx.id).not.toBe("hackeado");
   expect(tx.deletedAt).toBeNull(); // não nasce pré-apagado
   expect(tx.householdId).toBeNull();
+});
+
+test("searchTransactions filtra por texto e por tipo, só do dono", async () => {
+  await createTransaction(A, {
+    type: "expense",
+    amountCents: 500,
+    occurredAt: new Date(),
+    description: "Padaria da esquina",
+  });
+  await createTransaction(A, {
+    type: "income",
+    amountCents: 900,
+    occurredAt: new Date(),
+    description: "Freela design",
+  });
+  // B tem um texto parecido: não pode aparecer pra A.
+  await createTransaction(B, {
+    type: "expense",
+    amountCents: 700,
+    occurredAt: new Date(),
+    description: "Padaria do B",
+  });
+
+  const porTexto = await searchTransactions(A, { q: "padaria" });
+  expect(porTexto).toHaveLength(1);
+  expect(porTexto[0].description).toBe("Padaria da esquina");
+
+  const soGanhos = await searchTransactions(A, { tipo: "income" });
+  expect(soGanhos.every((t) => t.type === "income")).toBe(true);
+  expect(soGanhos.some((t) => t.description === "Freela design")).toBe(true);
 });

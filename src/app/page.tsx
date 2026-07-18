@@ -3,12 +3,12 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { resumoDoPeriodo, type Periodo } from "@/lib/data/summary";
 import { listRecentTransactions } from "@/lib/data/transactions";
-import { formatBRL, formatDiaSP } from "@/lib/format";
-import { labelFormaPagamento } from "@/lib/categorias";
+import { formatBRL, agruparPorDia } from "@/lib/format";
 import { SairBotao } from "@/components/sair-botao";
 import { FoxGlyph } from "@/components/marca";
 import { NumeroDinheiro } from "@/components/numero-dinheiro";
 import { IconeCategoria } from "@/components/icone-categoria";
+import { ItemLancamento } from "@/components/item-lancamento";
 import { Aterrissar } from "@/components/aterrissar";
 import { LandingV2 } from "@/components/landing-v2";
 
@@ -32,14 +32,7 @@ export default async function Home({
   const vazio = r.entrou === 0 && r.saiu === 0 && ultimos.length === 0;
   const quando = periodo === "semana" ? "esta semana" : "este mês";
 
-  // Agrupa os últimos lançamentos por dia (a lista já vem em ordem decrescente).
-  const grupos: { dia: string; itens: typeof ultimos }[] = [];
-  for (const t of ultimos) {
-    const dia = formatDiaSP(t.occurredAt);
-    const ultimo = grupos[grupos.length - 1];
-    if (ultimo && ultimo.dia === dia) ultimo.itens.push(t);
-    else grupos.push({ dia, itens: [t] });
-  }
+  const grupos = agruparPorDia(ultimos);
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 bg-feltro px-5 pb-[calc(6rem+env(safe-area-inset-bottom))] font-grotesk text-creme [padding-top:calc(env(safe-area-inset-top)+1.5rem)]">
@@ -151,46 +144,24 @@ export default async function Home({
 
       {grupos.length > 0 && (
         <section className="flex flex-col gap-4">
-          <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-sage">
-            Últimos lançamentos
-          </p>
+          <div className="flex items-baseline justify-between">
+            <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-sage">
+              Últimos lançamentos
+            </p>
+            <Link
+              href="/lancamentos"
+              className="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-brilho transition hover:opacity-80"
+            >
+              Ver tudo →
+            </Link>
+          </div>
           {grupos.map((grupo) => (
             <div key={grupo.dia} className="flex flex-col">
               <p className="mb-1 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-sage/80">
                 {grupo.dia}
               </p>
               {grupo.itens.map((t) => (
-                <Link
-                  key={t.id}
-                  href={`/editar/${t.id}`}
-                  className="flex items-center gap-3 border-b border-pauta/60 py-3 transition last:border-b-0 active:opacity-70"
-                >
-                  <span
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                    style={{
-                      backgroundColor: `${t.categoryColor ?? "#64748b"}1f`,
-                      color: t.categoryColor ?? "#9db4a8",
-                    }}
-                  >
-                    <IconeCategoria nome={t.categoryIcon ?? "dots"} className="h-5 w-5" />
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-sm font-medium text-creme">
-                      {t.description || t.categoryName || "Sem categoria"}
-                    </span>
-                    {t.paymentMethod && (
-                      <span className="font-mono text-[0.62rem] uppercase tracking-[0.1em] text-sage">
-                        {labelFormaPagamento(t.paymentMethod)}
-                      </span>
-                    )}
-                  </span>
-                  <span
-                    className={`font-serif text-[0.95rem] tnum ${t.type === "income" ? "text-brilho" : "text-alerta"}`}
-                  >
-                    {t.type === "income" ? "+" : "−"}
-                    {formatBRL(t.amountCents)}
-                  </span>
-                </Link>
+                <ItemLancamento key={t.id} t={t} />
               ))}
             </div>
           ))}
