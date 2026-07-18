@@ -12,7 +12,7 @@ export function SairBotao() {
         await authClient.signOut();
         router.refresh();
       }}
-      className="transition hover:text-nevoa"
+      className="transition-opacity hover:opacity-60"
     >
       Sair
     </button>

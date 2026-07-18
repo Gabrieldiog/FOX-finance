@@ -112,8 +112,9 @@
   --color-pauta: #274b31; /* pauta/hairline verde */
   --color-creme: #f1efe3; /* texto */
   --color-sage: #9db4a8; /* texto mudo */
-  --color-brilho: #38d07d; /* verde vivo de acento/CTA */
+  --color-brilho: #38d07d; /* verde vivo de acento/CTA + valores que entram */
   --color-brasa: #f4841f; /* laranja da raposa, acento mínimo */
+  --color-alerta: #f2795f; /* vermelho legível no feltro: valores que saem */
   --font-serif: var(--fonte-serif);
   --font-grotesk: var(--fonte-grotesk);
   --font-mono: var(--fonte-mono);

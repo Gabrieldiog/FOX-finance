@@ -27,7 +27,7 @@ export function ExcluirConta() {
       <button
         type="button"
         onClick={() => setConfirmar(true)}
-        className="h-11 rounded-full text-sm font-medium text-saiu transition active:scale-[.98]"
+        className="h-11 rounded-full text-sm font-medium text-alerta transition active:scale-[.98]"
       >
         Excluir minha conta
       </button>
@@ -35,7 +35,7 @@ export function ExcluirConta() {
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-saiu/40 bg-carvao p-4">
+    <div className="flex flex-col gap-3 rounded-2xl border border-alerta/40 bg-feltro-alto p-4 text-creme">
       <p className="text-sm">
         Isso apaga sua conta e <strong>todos os seus lançamentos</strong>, pra sempre. Tem certeza?
       </p>
@@ -43,7 +43,7 @@ export function ExcluirConta() {
         <button
           type="button"
           onClick={() => setConfirmar(false)}
-          className="h-11 flex-1 rounded-full border border-linha text-sm transition active:scale-[.98]"
+          className="h-11 flex-1 rounded-full border border-pauta text-sm text-sage transition active:scale-[.98]"
         >
           Cancelar
         </button>
@@ -51,7 +51,7 @@ export function ExcluirConta() {
           type="button"
           onClick={excluir}
           disabled={excluindo}
-          className="h-11 flex-1 rounded-full bg-saiu text-sm font-medium text-white transition active:scale-[.98] disabled:opacity-60"
+          className="h-11 flex-1 rounded-full bg-alerta text-sm font-medium text-feltro transition active:scale-[.98] disabled:opacity-60"
         >
           {excluindo ? "Excluindo…" : "Sim, excluir tudo"}
         </button>

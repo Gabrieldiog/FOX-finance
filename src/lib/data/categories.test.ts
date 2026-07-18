@@ -7,7 +7,7 @@ import {
   createCategory,
   deleteCategory,
 } from "./categories";
-import { corValida, iconeValido } from "@/lib/categorias";
+import { corValida, formaPagamentoValida, iconeValido } from "@/lib/categorias";
 
 const A = "xcat-user-a";
 const B = "xcat-user-b";
@@ -77,9 +77,11 @@ test("countUserCategories conta só as próprias, não as globais", async () => 
   await db.delete(category).where(eq(category.userId, A)); // limpa as próprias de A deste teste
 });
 
-test("validadores recusam ícone e cor fora do catálogo", () => {
+test("validadores recusam ícone, cor e forma de pagamento fora do catálogo", () => {
   expect(iconeValido("cart")).toBe(true);
   expect(iconeValido("dragao")).toBe(false);
   expect(corValida("#22c55e")).toBe(true);
   expect(corValida("#000000")).toBe(false);
+  expect(formaPagamentoValida("pix")).toBe(true);
+  expect(formaPagamentoValida("boleto")).toBe(false);
 });

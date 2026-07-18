@@ -10,6 +10,7 @@ export type NovaTransacao = {
   occurredAt: Date;
   categoryId?: string | null;
   description?: string | null;
+  paymentMethod?: string | null;
 };
 
 // REGRA DE OURO: sessionUserId vem SEMPRE da sessão no servidor, nunca de
@@ -30,6 +31,8 @@ export async function listRecentTransactions(sessionUserId: string, limit = 20) 
       id: transaction.id,
       type: transaction.type,
       amountCents: transaction.amountCents,
+      occurredAt: transaction.occurredAt,
+      paymentMethod: transaction.paymentMethod,
       description: transaction.description,
       categoryName: category.name,
       categoryIcon: category.icon,
@@ -70,6 +73,7 @@ export async function createTransaction(sessionUserId: string, input: NovaTransa
       occurredAt: input.occurredAt,
       categoryId: input.categoryId ?? null,
       description: input.description ?? null,
+      paymentMethod: input.paymentMethod ?? null,
     })
     .returning();
   return row;
@@ -78,7 +82,10 @@ export async function createTransaction(sessionUserId: string, input: NovaTransa
 export async function updateTransaction(
   sessionUserId: string,
   id: string,
-  input: Pick<NovaTransacao, "type" | "amountCents" | "categoryId" | "description">,
+  input: Pick<
+    NovaTransacao,
+    "type" | "amountCents" | "categoryId" | "description" | "occurredAt" | "paymentMethod"
+  >,
 ) {
   if (input.categoryId && !(await categoryIsUsable(sessionUserId, input.categoryId))) {
     throw new Error("categoria inválida");
@@ -90,6 +97,8 @@ export async function updateTransaction(
       amountCents: input.amountCents,
       categoryId: input.categoryId ?? null,
       description: input.description ?? null,
+      occurredAt: input.occurredAt,
+      paymentMethod: input.paymentMethod ?? null,
       updatedAt: new Date(),
     })
     .where(

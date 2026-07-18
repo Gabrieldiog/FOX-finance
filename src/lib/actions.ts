@@ -17,13 +17,31 @@ import {
   createCategory,
   deleteCategory,
 } from "@/lib/data/categories";
-import { corValida, iconeValido, MAX_CATEGORIAS_USUARIO } from "@/lib/categorias";
+import {
+  corValida,
+  formaPagamentoValida,
+  iconeValido,
+  MAX_CATEGORIAS_USUARIO,
+} from "@/lib/categorias";
 
 const base = {
   type: z.enum(["expense", "income"]),
   amountCents: z.number().int().positive().max(100_000_000_00), // teto sanitário: R$ 100 mi
   categoryId: z.string().uuid().nullish(),
   description: z.string().trim().max(200).optional(),
+  // Data do lançamento: opcional (default = agora). Recusa datas absurdas —
+  // nada antes de 2000 nem mais de ~36h no futuro (folga de fuso).
+  occurredAt: z.coerce
+    .date()
+    .refine(
+      (d) =>
+        d.getTime() >= new Date("2000-01-01").getTime() &&
+        d.getTime() <= Date.now() + 36 * 60 * 60 * 1000,
+      "Data fora do intervalo.",
+    )
+    .optional(),
+  // Forma de pagamento: opcional, só ids do catálogo fechado.
+  paymentMethod: z.string().refine(formaPagamentoValida, "Forma de pagamento inválida.").nullish(),
 };
 
 const criarSchema = z.object(base);
@@ -46,9 +64,10 @@ export async function criarLancamento(raw: unknown) {
     await createTransaction(userId, {
       type: parsed.data.type,
       amountCents: parsed.data.amountCents,
-      occurredAt: new Date(),
+      occurredAt: parsed.data.occurredAt ?? new Date(),
       categoryId: parsed.data.categoryId ?? null,
       description: parsed.data.description || null,
+      paymentMethod: parsed.data.paymentMethod ?? null,
     });
   } catch {
     return { ok: false as const, erro: "Não foi possível salvar." };
@@ -71,6 +90,8 @@ export async function editarLancamento(raw: unknown) {
       amountCents: parsed.data.amountCents,
       categoryId: parsed.data.categoryId ?? null,
       description: parsed.data.description || null,
+      occurredAt: parsed.data.occurredAt ?? new Date(),
+      paymentMethod: parsed.data.paymentMethod ?? null,
     });
     if (!r) return { ok: false as const, erro: "Lançamento não encontrado." };
   } catch {
