@@ -7,7 +7,7 @@ import { formatBRL } from "@/lib/format";
 import { SairBotao } from "@/components/sair-botao";
 import { Marca } from "@/components/marca";
 import { NumeroDinheiro } from "@/components/numero-dinheiro";
-import { FoxMascote } from "@/components/fox-mascote";
+import { IconeCategoria } from "@/components/icone-categoria";
 import { Aterrissar } from "@/components/aterrissar";
 import { LandingV2 } from "@/components/landing-v2";
 
@@ -91,7 +91,9 @@ export default async function Home({
 
       {vazio && (
         <section className="flex flex-col items-center gap-4 rounded-3xl border border-linha bg-carvao px-6 py-10 text-center shadow-[var(--sombra-card)]">
-          <FoxMascote size={120} />
+          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-menta text-verde-texto">
+            <IconeCategoria nome="receipt" className="h-8 w-8" />
+          </span>
           <div>
             <p className="font-display text-lg font-bold">Nada por aqui ainda</p>
             <p className="mt-1 text-sm text-nevoa-fraca">
@@ -107,16 +109,24 @@ export default async function Home({
             Para onde foi
           </p>
           {r.categorias.map((c) => (
-            <div key={c.name} className="flex flex-col gap-1.5">
-              <div className="flex justify-between text-sm">
-                <span className="font-semibold">{c.name}</span>
-                <span className="dinheiro text-nevoa-fraca">{formatBRL(c.total)}</span>
-              </div>
-              <div className="h-2.5 overflow-hidden rounded-full bg-menta">
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${(c.total / maior) * 100}%`, backgroundColor: c.color }}
-                />
+            <div key={c.name} className="flex items-center gap-3">
+              <span
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                style={{ backgroundColor: `${c.color}1f`, color: c.color }}
+              >
+                <IconeCategoria nome={c.icon} className="h-[18px] w-[18px]" />
+              </span>
+              <div className="flex flex-1 flex-col gap-1.5">
+                <div className="flex justify-between text-sm">
+                  <span className="font-semibold">{c.name}</span>
+                  <span className="dinheiro text-nevoa-fraca">{formatBRL(c.total)}</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-menta">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${(c.total / maior) * 100}%`, backgroundColor: c.color }}
+                  />
+                </div>
               </div>
             </div>
           ))}
@@ -136,9 +146,14 @@ export default async function Home({
             >
               <span className="flex items-center gap-3 text-sm font-semibold">
                 <span
-                  className="h-3 w-3 shrink-0 rounded-full"
-                  style={{ backgroundColor: t.categoryColor ?? "var(--nevoa-fraca)" }}
-                />
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                  style={{
+                    backgroundColor: `${t.categoryColor ?? "#64748b"}1f`,
+                    color: t.categoryColor ?? "var(--nevoa-fraca)",
+                  }}
+                >
+                  <IconeCategoria nome={t.categoryIcon ?? "dots"} className="h-[18px] w-[18px]" />
+                </span>
                 {t.description || t.categoryName || "Sem categoria"}
               </span>
               <span

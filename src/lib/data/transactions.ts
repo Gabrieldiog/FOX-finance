@@ -32,6 +32,7 @@ export async function listRecentTransactions(sessionUserId: string, limit = 20) 
       amountCents: transaction.amountCents,
       description: transaction.description,
       categoryName: category.name,
+      categoryIcon: category.icon,
       categoryColor: category.color,
     })
     .from(transaction)

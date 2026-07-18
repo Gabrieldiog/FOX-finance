@@ -9,7 +9,7 @@ export type Resumo = {
   entrou: number;
   saiu: number;
   saldo: number;
-  categorias: { name: string; color: string; total: number }[];
+  categorias: { name: string; icon: string; color: string; total: number }[];
 };
 
 export async function resumoDoPeriodo(sessionUserId: string, periodo: Periodo): Promise<Resumo> {
@@ -36,6 +36,7 @@ export async function resumoDoPeriodo(sessionUserId: string, periodo: Periodo): 
   const cats = await db
     .select({
       name: category.name,
+      icon: category.icon,
       color: category.color,
       total: sql<string>`coalesce(sum(${transaction.amountCents}), 0)`,
     })
@@ -49,7 +50,7 @@ export async function resumoDoPeriodo(sessionUserId: string, periodo: Periodo): 
         gte(transaction.occurredAt, inicio),
       ),
     )
-    .groupBy(category.id, category.name, category.color)
+    .groupBy(category.id, category.name, category.icon, category.color)
     .orderBy(desc(sql`coalesce(sum(${transaction.amountCents}), 0)`))
     .limit(5);
 
@@ -61,6 +62,7 @@ export async function resumoDoPeriodo(sessionUserId: string, periodo: Periodo): 
     saldo: entrou - saiu,
     categorias: cats.map((c) => ({
       name: c.name ?? "Sem categoria",
+      icon: c.icon ?? "dots",
       color: c.color ?? "#64748b",
       total: Number(c.total),
     })),

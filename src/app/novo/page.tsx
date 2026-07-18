@@ -11,7 +11,13 @@ export default async function Novo() {
   const categorias = await listCategories(session.user.id);
   return (
     <FormaLancamento
-      categorias={categorias.map((c) => ({ id: c.id, name: c.name, type: c.type, color: c.color }))}
+      categorias={categorias.map((c) => ({
+        id: c.id,
+        name: c.name,
+        type: c.type,
+        icon: c.icon,
+        color: c.color,
+      }))}
     />
   );
 }

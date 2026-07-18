@@ -2,11 +2,15 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { listUserCategories } from "@/lib/data/categories";
 import { ExcluirConta } from "./excluir-conta";
+import { GerirCategorias } from "./gerir-categorias";
 
 export default async function Conta() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/entrar");
+
+  const minhasCategorias = await listUserCategories(session.user.id);
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-6 pt-safe pb-[calc(2rem+env(safe-area-inset-bottom))] [padding-top:calc(env(safe-area-inset-top)+1.5rem)]">
@@ -22,6 +26,16 @@ export default async function Conta() {
         <p className="font-display text-lg font-bold">{session.user.name}</p>
         <p className="text-sm text-nevoa-fraca">{session.user.email}</p>
       </div>
+
+      <GerirCategorias
+        categorias={minhasCategorias.map((c) => ({
+          id: c.id,
+          name: c.name,
+          type: c.type,
+          icon: c.icon,
+          color: c.color,
+        }))}
+      />
 
       <a
         href="/api/export"

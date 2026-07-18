@@ -16,7 +16,13 @@ export default async function Editar({ params }: { params: Promise<{ id: string 
   const categorias = await listCategories(session.user.id);
   return (
     <FormaLancamento
-      categorias={categorias.map((c) => ({ id: c.id, name: c.name, type: c.type, color: c.color }))}
+      categorias={categorias.map((c) => ({
+        id: c.id,
+        name: c.name,
+        type: c.type,
+        icon: c.icon,
+        color: c.color,
+      }))}
       inicial={{
         id: tx.id,
         type: tx.type === "income" ? "income" : "expense",

@@ -12,6 +12,12 @@ import {
   softDeleteTransaction,
   updateTransaction,
 } from "@/lib/data/transactions";
+import {
+  countUserCategories,
+  createCategory,
+  deleteCategory,
+} from "@/lib/data/categories";
+import { corValida, iconeValido, MAX_CATEGORIAS_USUARIO } from "@/lib/categorias";
 
 const base = {
   type: z.enum(["expense", "income"]),
@@ -86,6 +92,65 @@ export async function excluirLancamento(id: string) {
   if (!r) return { ok: false as const, erro: "Lançamento não encontrado." };
 
   revalidatePath("/");
+  return { ok: true as const };
+}
+
+const criarCategoriaSchema = z.object({
+  name: z.string().trim().min(1).max(24),
+  type: z.enum(["expense", "income"]),
+  // Ícone e cor só valem se estiverem no catálogo fechado (nada de SVG/hex solto).
+  icon: z.string().refine(iconeValido, "Ícone inválido."),
+  color: z.string().refine(corValida, "Cor inválida."),
+});
+
+export async function criarCategoria(raw: unknown) {
+  const userId = await sessaoUserId();
+  if (!userId) return { ok: false as const, erro: "Não autenticado." };
+
+  const parsed = criarCategoriaSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false as const, erro: "Dados inválidos." };
+
+  const total = await countUserCategories(userId);
+  if (total >= MAX_CATEGORIAS_USUARIO) {
+    return {
+      ok: false as const,
+      erro: `Você já tem ${MAX_CATEGORIAS_USUARIO} categorias. Apague alguma antes.`,
+    };
+  }
+
+  try {
+    const row = await createCategory(userId, parsed.data);
+    revalidatePath("/");
+    revalidatePath("/novo");
+    revalidatePath("/conta");
+    return {
+      ok: true as const,
+      categoria: {
+        id: row.id,
+        name: row.name,
+        type: row.type as "expense" | "income",
+        icon: row.icon,
+        color: row.color,
+      },
+    };
+  } catch {
+    return { ok: false as const, erro: "Não foi possível criar a categoria." };
+  }
+}
+
+export async function excluirCategoria(id: string) {
+  const userId = await sessaoUserId();
+  if (!userId) return { ok: false as const, erro: "Não autenticado." };
+  if (!z.string().uuid().safeParse(id).success) {
+    return { ok: false as const, erro: "Inválido." };
+  }
+
+  const r = await deleteCategory(userId, id);
+  if (!r) return { ok: false as const, erro: "Categoria não encontrada." };
+
+  revalidatePath("/");
+  revalidatePath("/novo");
+  revalidatePath("/conta");
   return { ok: true as const };
 }
 
