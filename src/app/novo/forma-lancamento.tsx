@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatBRL } from "@/lib/format";
 import { criarLancamento, editarLancamento, excluirLancamento } from "@/lib/actions";
+import { IconeCategoria } from "@/components/icone-categoria";
+import { NovaCategoria, type Categoria } from "@/components/nova-categoria";
 
-type Cat = { id: string; name: string; type: string; color: string };
+type Cat = { id: string; name: string; type: string; icon: string; color: string };
 type Inicial = {
   id: string;
   type: "expense" | "income";
@@ -26,13 +28,21 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
   const [salvando, setSalvando] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [cats, setCats] = useState<Cat[]>(categorias);
+  const [criandoCat, setCriandoCat] = useState(false);
 
-  const cats = categorias.filter((c) => c.type === type);
+  const catsDoTipo = cats.filter((c) => c.type === type);
   const ganho = type === "income";
 
   function trocarTipo(t: "expense" | "income") {
     setType(t);
     setCategoryId(null);
+  }
+
+  function aoCriarCategoria(nova: Categoria) {
+    setCats((atuais) => [...atuais, nova]);
+    setCategoryId(nova.id);
+    setCriandoCat(false);
   }
 
   async function salvar() {
@@ -108,7 +118,7 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
       </div>
 
       <div className="flex flex-wrap justify-center gap-2">
-        {cats.map((c) => {
+        {catsDoTipo.map((c) => {
           const ativa = categoryId === c.id;
           return (
             <button
@@ -117,11 +127,24 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
               onClick={() => setCategoryId(ativa ? null : c.id)}
               className={`flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold transition ${ativa ? "border-verde bg-menta text-nevoa" : "border-linha bg-carvao text-nevoa-fraca"}`}
             >
-              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
+              <span
+                className="flex h-5 w-5 items-center justify-center rounded-full"
+                style={{ backgroundColor: `${c.color}1f`, color: c.color }}
+              >
+                <IconeCategoria nome={c.icon} className="h-3.5 w-3.5" />
+              </span>
               {c.name}
             </button>
           );
         })}
+        <button
+          type="button"
+          onClick={() => setCriandoCat(true)}
+          className="flex items-center gap-1.5 rounded-full border border-dashed border-linha px-3.5 py-2 text-sm font-semibold text-nevoa-fraca transition hover:border-verde hover:text-verde-texto"
+        >
+          <IconeCategoria nome="plus" className="h-4 w-4" />
+          Nova
+        </button>
       </div>
 
       <input
@@ -153,6 +176,14 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
           </button>
         )}
       </div>
+
+      {criandoCat && (
+        <NovaCategoria
+          tipo={type}
+          onCriada={aoCriarCategoria}
+          onFechar={() => setCriandoCat(false)}
+        />
+      )}
     </main>
   );
 }
