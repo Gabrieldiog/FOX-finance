@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
+  AnimatePresence,
   LazyMotion,
   domAnimation,
   m,
@@ -57,6 +59,54 @@ const SEGURANCA = [
   ["Robô e força bruta não passam", "Trava depois de 5 erros, honeypot no cadastro e limite de tentativas por IP."],
 ];
 
+const FAQ = [
+  ["É grátis mesmo?", "É. Dá pra criar conta e usar sem pagar nada e sem cartão — é um projeto pessoal, feito com carinho pra gente de verdade usar."],
+  ["Preciso conectar meu banco?", "Não. Você anota seus gastos e ganhos do seu jeito — nada de senha de banco, nada de open finance."],
+  ["Meus dados estão seguros?", "Sim. Senha guardada com Argon2id, cada conta totalmente isolada da outra e trava contra força bruta. Nem a gente vê sua senha."],
+  ["Funciona no celular?", "Funciona, e dá pra instalar como app na tela inicial (PWA) — sem baixar de loja nenhuma."],
+  ["E se eu quiser sair?", "Seus dados são seus: dá pra exportar tudo em JSON ou excluir a conta de verdade quando quiser (LGPD)."],
+];
+
+function Faq() {
+  const [aberto, setAberto] = useState<number | null>(0);
+  return (
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-3">
+      {FAQ.map(([q, a], i) => {
+        const on = aberto === i;
+        return (
+          <div key={q} className="overflow-hidden rounded-2xl border border-linha bg-carvao/70 backdrop-blur">
+            <button
+              type="button"
+              onClick={() => setAberto(on ? null : i)}
+              aria-expanded={on}
+              className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-display font-bold"
+            >
+              {q}
+              <span className={`shrink-0 text-2xl font-normal leading-none text-verde-texto transition-transform duration-300 ${on ? "rotate-45" : ""}`}>
+                +
+              </span>
+            </button>
+            <AnimatePresence initial={false}>
+              {on && (
+                <m.div
+                  key="a"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: SUAVE }}
+                  className="overflow-hidden"
+                >
+                  <p className="px-5 pb-4 text-nevoa-fraca">{a}</p>
+                </m.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function Landing() {
   const { scrollYProgress } = useScroll();
   const barra = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.3 });
@@ -102,10 +152,11 @@ export function Landing() {
         {/* 1. HERO */}
         <section className="mx-auto grid w-full max-w-6xl items-center gap-8 px-5 pb-20 pt-8 md:grid-cols-[1.05fr_0.95fr] md:pb-28 md:pt-16">
           <div className="flex flex-col items-start gap-6">
+            {/* LCP: o H1 não anima de opacity:0 (o Chrome adiaria o LCP pro fim). */}
             <m.h1
-              initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ duration: 0.8, ease: SUAVE }}
+              initial={{ opacity: 0.1, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: SUAVE }}
               className="font-display text-[2.75rem] font-extrabold leading-[1.03] tracking-tight text-fluida-2xl"
             >
               Ruim com dinheiro?{" "}
@@ -144,7 +195,9 @@ export function Landing() {
                   Ver como funciona
                 </a>
               </div>
-              <span className="text-sm text-nevoa-fraca">Grátis pra começar · seus dados criptografados.</span>
+              <span className="text-sm text-nevoa-fraca">
+                Grátis, sem cartão · seus dados criptografados · código aberto no GitHub.
+              </span>
             </m.div>
           </div>
 
@@ -233,14 +286,19 @@ export function Landing() {
             </h2>
           </Revela>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {/* Card-herói: saldo que conta ao entrar */}
+            {/* Card-herói: saldo que conta ao entrar, com borda viva girando */}
             <Revela className="sm:col-span-2 md:col-span-2">
-              <CardTilt className="h-full overflow-hidden rounded-3xl bg-gradient-to-br from-verde to-verde-vivo p-7 text-menta-tinta shadow-[0_24px_50px_-24px_var(--verde)]">
-                <div className="pointer-events-none absolute -right-6 -top-8 h-40 w-40 rounded-full bg-white/15 blur-2xl" />
-                <p className="font-display text-sm font-bold uppercase tracking-wider opacity-80">Sobrou este mês</p>
-                <ContadorInView cents={251097} className="dinheiro mt-1 block font-display text-5xl font-extrabold" />
-                <p className="mt-2 text-sm font-semibold opacity-80">No verde — a raposa aprova.</p>
-              </CardTilt>
+              <div
+                className="borda-viva h-full rounded-3xl p-[2px] shadow-[0_24px_50px_-24px_var(--verde)]"
+                style={{ background: "conic-gradient(from var(--angle), #86efac, #ffffff, #15803d, #86efac)" }}
+              >
+                <div className="relative h-full overflow-hidden rounded-[calc(1.5rem-2px)] bg-gradient-to-br from-verde to-verde-vivo p-7 text-menta-tinta">
+                  <div className="pointer-events-none absolute -right-6 -top-8 h-40 w-40 rounded-full bg-white/15 blur-2xl" />
+                  <p className="font-display text-sm font-bold uppercase tracking-wider opacity-80">Sobrou este mês</p>
+                  <ContadorInView cents={251097} className="dinheiro mt-1 block font-display text-5xl font-extrabold" />
+                  <p className="mt-2 text-sm font-semibold opacity-80">No verde — a raposa aprova.</p>
+                </div>
+              </div>
             </Revela>
             {/* Entrou / Saiu */}
             <Revela atraso={0.06}>
@@ -290,7 +348,11 @@ export function Landing() {
         </section>
 
         {/* 5. COMO TE AJUDAMOS */}
-        <section id="como" className="mx-auto w-full max-w-5xl px-5 py-16 md:py-24">
+        <section id="como" className="relative mx-auto w-full max-w-5xl px-5 py-16 md:py-24">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(var(--linha)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_72%)]"
+          />
           <Revela className="mb-12 flex flex-col items-center gap-3 text-center">
             <span className="text-xs font-bold uppercase tracking-widest text-verde-texto">Como funciona</span>
             <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight md:text-4xl">
@@ -354,6 +416,19 @@ export function Landing() {
               ))}
             </div>
           </div>
+        </section>
+
+        {/* 5.7 FAQ */}
+        <section className="mx-auto w-full max-w-5xl px-5 py-16 md:py-24">
+          <Revela className="mb-10 flex flex-col items-center gap-3 text-center">
+            <span className="text-xs font-bold uppercase tracking-widest text-verde-texto">Perguntas</span>
+            <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight md:text-4xl">
+              O que costumam perguntar
+            </h2>
+          </Revela>
+          <Revela atraso={0.05}>
+            <Faq />
+          </Revela>
         </section>
 
         {/* 6. CTA FINAL */}
