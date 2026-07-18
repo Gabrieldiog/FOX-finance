@@ -26,12 +26,12 @@ export function GerirCategorias({ categorias }: { categorias: Cat[] }) {
 
   return (
     <section className="flex flex-col gap-2">
-      <p className="font-display text-sm font-bold uppercase tracking-wider text-nevoa-fraca">
+      <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-sage">
         Minhas categorias
       </p>
 
       {lista.length === 0 ? (
-        <div className="rounded-2xl border border-linha bg-carvao p-5 text-sm text-nevoa-fraca shadow-[var(--sombra-card)]">
+        <div className="rounded-2xl border border-pauta bg-feltro-alto p-5 text-sm text-sage">
           Você ainda não criou categorias próprias. Crie uma ao registrar um lançamento, no
           botão “Nova”.
         </div>
@@ -39,7 +39,7 @@ export function GerirCategorias({ categorias }: { categorias: Cat[] }) {
         lista.map((c) => (
           <div
             key={c.id}
-            className="flex items-center gap-3 rounded-2xl border border-linha bg-carvao px-4 py-3 shadow-[var(--sombra-card)]"
+            className="flex items-center gap-3 rounded-2xl border border-pauta bg-feltro-alto px-4 py-3"
           >
             <span
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
@@ -47,15 +47,15 @@ export function GerirCategorias({ categorias }: { categorias: Cat[] }) {
             >
               <IconeCategoria nome={c.icon} className="h-[18px] w-[18px]" />
             </span>
-            <span className="flex-1 text-sm font-semibold">{c.name}</span>
-            <span className="text-xs font-semibold text-nevoa-fraca">
+            <span className="flex-1 text-sm font-medium text-creme">{c.name}</span>
+            <span className="font-mono text-[0.62rem] uppercase tracking-[0.1em] text-sage">
               {c.type === "income" ? "Ganho" : "Gasto"}
             </span>
             <button
               type="button"
               onClick={() => apagar(c.id)}
               disabled={apagando === c.id}
-              className="text-sm font-bold text-saiu transition active:scale-95 disabled:opacity-50"
+              className="text-sm font-medium text-alerta transition active:scale-95 disabled:opacity-50"
             >
               {apagando === c.id ? "…" : "Apagar"}
             </button>

@@ -51,6 +51,25 @@ export const CORES_CATEGORIA = [
 // Teto por usuário: evita que alguém crie categorias em massa (abuso/DoS de linha).
 export const MAX_CATEGORIAS_USUARIO = 40;
 
+// Formas de pagamento (opcional no lançamento). Catálogo fechado: o backend só
+// aceita um destes ids; o ícone reaproveita o <IconeCategoria>.
+export const FORMAS_PAGAMENTO = [
+  { id: "pix", label: "Pix", icon: "pix" },
+  { id: "dinheiro", label: "Dinheiro", icon: "salary" },
+  { id: "cartao", label: "Cartão", icon: "wallet" },
+  { id: "outro", label: "Outro", icon: "dots" },
+] as const;
+
+export type FormaPagamentoId = (typeof FORMAS_PAGAMENTO)[number]["id"];
+
+export function formaPagamentoValida(v: string): v is FormaPagamentoId {
+  return FORMAS_PAGAMENTO.some((f) => f.id === v);
+}
+
+export function labelFormaPagamento(id: string): string | null {
+  return FORMAS_PAGAMENTO.find((f) => f.id === id)?.label ?? null;
+}
+
 export function iconeValido(v: string): v is IconeNome {
   return (ICONES_CATEGORIA as readonly string[]).includes(v);
 }

@@ -29,6 +29,8 @@ export default async function Editar({ params }: { params: Promise<{ id: string 
         amountCents: tx.amountCents,
         categoryId: tx.categoryId,
         description: tx.description ?? "",
+        occurredAt: tx.occurredAt.toISOString(),
+        paymentMethod: tx.paymentMethod,
       }}
     />
   );

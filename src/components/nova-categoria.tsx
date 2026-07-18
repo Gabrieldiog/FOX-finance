@@ -58,22 +58,22 @@ export function NovaCategoria({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-nevoa/40 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 font-grotesk sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-label="Nova categoria"
       onClick={onFechar}
     >
       <div
-        className="w-full max-w-sm rounded-t-3xl border border-linha bg-carvao p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-[var(--sombra-card)] sm:rounded-3xl sm:pb-6"
+        className="w-full max-w-sm rounded-t-3xl border border-pauta bg-feltro-topo p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-creme sm:rounded-3xl sm:pb-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">
-          <p className="font-display text-lg font-bold">Nova categoria</p>
+          <p className="font-serif text-lg font-semibold">Nova categoria</p>
           <button
             type="button"
             onClick={onFechar}
-            className="text-sm font-semibold text-nevoa-fraca transition hover:text-nevoa"
+            className="font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:text-creme"
           >
             Fechar
           </button>
@@ -92,11 +92,11 @@ export function NovaCategoria({
             onChange={(e) => setNome(e.target.value)}
             maxLength={24}
             placeholder={tipo === "income" ? "Ex.: Freela" : "Ex.: Farmácia"}
-            className="h-12 flex-1 rounded-xl border border-linha bg-breu px-4 outline-none transition placeholder:text-nevoa-fraca focus:border-verde focus:ring-4 focus:ring-verde/20"
+            className="h-12 flex-1 rounded-xl border border-pauta bg-feltro-alto px-4 text-creme outline-none transition placeholder:text-sage focus:border-brilho"
           />
         </div>
 
-        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-nevoa-fraca">Ícone</p>
+        <p className="mb-2 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-sage">Ícone</p>
         <div className="mb-5 grid grid-cols-6 gap-2">
           {ICONES_CATEGORIA.map((nomeIcone) => {
             const ativo = nomeIcone === icon;
@@ -108,7 +108,7 @@ export function NovaCategoria({
                 aria-label={nomeIcone}
                 aria-pressed={ativo}
                 className={`flex aspect-square items-center justify-center rounded-xl border transition ${
-                  ativo ? "border-transparent" : "border-linha text-nevoa-fraca hover:text-nevoa"
+                  ativo ? "border-transparent" : "border-pauta text-sage hover:text-creme"
                 }`}
                 style={ativo ? { backgroundColor: `${color}1f`, color } : undefined}
               >
@@ -118,7 +118,7 @@ export function NovaCategoria({
           })}
         </div>
 
-        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-nevoa-fraca">Cor</p>
+        <p className="mb-2 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-sage">Cor</p>
         <div className="mb-6 flex flex-wrap gap-3">
           {CORES_CATEGORIA.map((c) => (
             <button
@@ -130,19 +130,19 @@ export function NovaCategoria({
               className="h-8 w-8 rounded-full transition active:scale-90"
               style={{
                 backgroundColor: c,
-                boxShadow: c === color ? `0 0 0 2px var(--carvao), 0 0 0 4px ${c}` : undefined,
+                boxShadow: c === color ? `0 0 0 2px #1d3f28, 0 0 0 4px ${c}` : undefined,
               }}
             />
           ))}
         </div>
 
-        {erro && <p className="mb-3 text-sm font-semibold text-saiu">{erro}</p>}
+        {erro && <p className="mb-3 text-sm font-medium text-alerta">{erro}</p>}
 
         <button
           type="button"
           onClick={criar}
           disabled={salvando}
-          className="flex h-12 w-full items-center justify-center rounded-xl bg-verde font-display font-bold text-tinta transition hover:bg-verde-forte active:scale-[.98] disabled:opacity-60"
+          className="flex h-12 w-full items-center justify-center rounded-xl bg-brilho font-serif text-lg font-semibold text-feltro transition active:scale-[.98] disabled:opacity-60"
         >
           {salvando ? "Criando…" : "Criar categoria"}
         </button>

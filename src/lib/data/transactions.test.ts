@@ -47,6 +47,8 @@ test("um usuário não enxerga (nem apaga) a transação do outro", async () => 
       amountCents: 1,
       categoryId: null,
       description: null,
+      occurredAt: new Date(),
+      paymentMethod: null,
     }),
   ).toBeNull();
 
@@ -83,6 +85,30 @@ test("A não consegue anexar a categoria privada de B, mas a global é aceita", 
 
   // limpa a categoria global (a de B some junto com B no afterAll)
   await db.delete(category).where(eq(category.id, catGlobal.id));
+});
+
+test("createTransaction guarda occurredAt e paymentMethod; update troca os dois", async () => {
+  const quando = new Date("2026-05-10T15:00:00.000Z");
+  const tx = await createTransaction(A, {
+    type: "expense",
+    amountCents: 1234,
+    occurredAt: quando,
+    paymentMethod: "pix",
+  });
+  expect(tx.paymentMethod).toBe("pix");
+  expect(tx.occurredAt.getTime()).toBe(quando.getTime());
+
+  const depois = new Date("2026-05-11T15:00:00.000Z");
+  const atual = await updateTransaction(A, tx.id, {
+    type: "expense",
+    amountCents: 1234,
+    categoryId: null,
+    description: null,
+    occurredAt: depois,
+    paymentMethod: "dinheiro",
+  });
+  expect(atual?.paymentMethod).toBe("dinheiro");
+  expect(atual?.occurredAt.getTime()).toBe(depois.getTime());
 });
 
 test("mass assignment: campos extras do input são ignorados", async () => {
