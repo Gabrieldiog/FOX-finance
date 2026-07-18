@@ -258,6 +258,13 @@ export default async function Estatisticas({
 
       <ListaCategorias titulo="Onde mais gastou" itens={atual.gastos} />
       <ListaCategorias titulo="Onde mais ganhou" itens={atual.ganhos} />
+
+      <a
+        href={`/api/relatorio?mes=${chaveMes}`}
+        className="flex h-12 items-center justify-center rounded-xl border border-pauta font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:border-brilho hover:text-brilho"
+      >
+        Baixar relatório de {rotuloMesCurto(ano, mes)} (.txt)
+      </a>
     </main>
   );
 }
