@@ -9,7 +9,7 @@ import { Marca } from "@/components/marca";
 import { NumeroDinheiro } from "@/components/numero-dinheiro";
 import { FoxMascote } from "@/components/fox-mascote";
 import { Aterrissar } from "@/components/aterrissar";
-import { Landing } from "@/components/landing";
+import { LandingV2 } from "@/components/landing-v2";
 
 export default async function Home({
   searchParams,
@@ -19,7 +19,7 @@ export default async function Home({
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
-    return <Landing />;
+    return <LandingV2 />;
   }
 
   const sp = await searchParams;
