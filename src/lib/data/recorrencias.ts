@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { category, recurring, transaction } from "@/db/schema";
 
@@ -109,37 +109,18 @@ export async function deleteRecurring(sessionUserId: string, id: string) {
   return row ?? null;
 }
 
-// Insere a ocorrência do mês. O ON CONFLICT DO NOTHING (na UNIQUE
-// recurring_id + occurrence_ym) faz o dedupe no BANCO: nem duas cargas
-// concorrentes duplicam, e uma ocorrência apagada (soft-delete mantém o
-// occurrence_ym) segue barrada — não volta. Retorna se de fato criou.
-async function inserirOcorrencia(
-  sessionUserId: string,
-  regra: typeof recurring.$inferSelect,
-  ano: number,
-  mes: number,
-  dia: number,
-): Promise<boolean> {
-  const linhas = await db
-    .insert(transaction)
-    .values({
-      userId: sessionUserId,
-      type: regra.type,
-      amountCents: regra.amountCents,
-      occurredAt: sql`(make_timestamp(${ano}, ${mes}, ${dia}, 12, 0, 0) at time zone 'America/Sao_Paulo')`,
-      categoryId: regra.categoryId ?? null,
-      description: regra.description ?? null,
-      paymentMethod: regra.paymentMethod ?? null,
-      recurringId: regra.id,
-      occurrenceYm: `${ano}-${String(mes).padStart(2, "0")}`,
-    })
-    .onConflictDoNothing({ target: [transaction.recurringId, transaction.occurrenceYm] })
-    .returning({ id: transaction.id });
-  return linhas.length > 0;
+// Meia-noite? Não: meio-dia em São Paulo, pra o dia no fuso nunca virar por
+// causa de borda. SP é UTC-3 fixo (o Brasil não tem horário de verão desde
+// 2019), então meio-dia SP = 15:00 UTC. O buffer de 12h ainda protege a data
+// mesmo que o offset fosse -02.
+function meioDiaSP(ano: number, mes: number, dia: number): Date {
+  return new Date(Date.UTC(ano, mes - 1, dia, 15, 0, 0));
 }
 
 // Cria os lançamentos que já venceram e ainda não existem, de cada molde ativo.
-// Idempotente (dedupe no banco). Chamado quando o usuário abre o app.
+// Idempotente e barato: uma query lista o que já existe na janela, o que falta
+// vira um único INSERT em lote. No caso comum (tudo já materializado) são só 2
+// SELECTs e nenhum INSERT — nada de dezenas de idas ao banco por load.
 //
 // Varre no máximo os últimos 12 meses (janela = do mais recente entre start_ym e
 // "hoje − 11 meses" até hoje). Isso garante o mês corrente pra sempre — sem o
@@ -154,22 +135,35 @@ export async function materializarRecorrencias(sessionUserId: string): Promise<n
 
   const hoje = hojeSP();
   const janela = mesesAtras(hoje.ano, hoje.mes, 11); // piso da varredura
-  let criados = 0;
+  const janelaYm = `${janela.ano}-${String(janela.mes).padStart(2, "0")}`;
 
+  // O que já existe na janela, numa query só. Inclui soft-deleted de propósito:
+  // uma ocorrência apagada mantém o occurrence_ym e NÃO deve voltar.
+  const existentes = await db
+    .select({ recurringId: transaction.recurringId, ym: transaction.occurrenceYm })
+    .from(transaction)
+    .where(
+      and(
+        eq(transaction.userId, sessionUserId),
+        inArray(
+          transaction.recurringId,
+          regras.map((r) => r.id),
+        ),
+        gte(transaction.occurrenceYm, janelaYm),
+      ),
+    );
+  const jaTem = new Set(existentes.map((e) => `${e.recurringId}|${e.ym}`));
+
+  // Monta só as ocorrências que faltam (nada de INSERT cego mês a mês).
+  const novas: (typeof transaction.$inferInsert)[] = [];
   for (const regra of regras) {
     const [sy, sm] = regra.startYm.split("-").map(Number);
     if (!sy || !sm) continue;
 
     // Começa do mais recente entre start_ym e o piso da janela.
-    let ano: number;
-    let mes: number;
-    if (ordinal(sy, sm) >= ordinal(janela.ano, janela.mes)) {
-      ano = sy;
-      mes = sm;
-    } else {
-      ano = janela.ano;
-      mes = janela.mes;
-    }
+    const comecaNoStart = ordinal(sy, sm) >= ordinal(janela.ano, janela.mes);
+    let ano = comecaNoStart ? sy : janela.ano;
+    let mes = comecaNoStart ? sm : janela.mes;
 
     while (ordinal(ano, mes) <= ordinal(hoje.ano, hoje.mes)) {
       // Último dia do mês (clamp: dia 31 em fevereiro cai em 28/29).
@@ -178,9 +172,20 @@ export async function materializarRecorrencias(sessionUserId: string): Promise<n
       const jaChegou =
         ano < hoje.ano ||
         (ano === hoje.ano && (mes < hoje.mes || (mes === hoje.mes && dia <= hoje.dia)));
+      const ym = `${ano}-${String(mes).padStart(2, "0")}`;
 
-      if (jaChegou && (await inserirOcorrencia(sessionUserId, regra, ano, mes, dia))) {
-        criados++;
+      if (jaChegou && !jaTem.has(`${regra.id}|${ym}`)) {
+        novas.push({
+          userId: sessionUserId,
+          type: regra.type,
+          amountCents: regra.amountCents,
+          occurredAt: meioDiaSP(ano, mes, dia),
+          categoryId: regra.categoryId ?? null,
+          description: regra.description ?? null,
+          paymentMethod: regra.paymentMethod ?? null,
+          recurringId: regra.id,
+          occurrenceYm: ym,
+        });
       }
 
       mes++;
@@ -191,5 +196,14 @@ export async function materializarRecorrencias(sessionUserId: string): Promise<n
     }
   }
 
-  return criados;
+  if (novas.length === 0) return 0;
+
+  // Um INSERT em lote. O ON CONFLICT DO NOTHING (na UNIQUE recurring_id +
+  // occurrence_ym) segura qualquer corrida entre duas cargas concorrentes.
+  const inseridas = await db
+    .insert(transaction)
+    .values(novas)
+    .onConflictDoNothing({ target: [transaction.recurringId, transaction.occurrenceYm] })
+    .returning({ id: transaction.id });
+  return inseridas.length;
 }
