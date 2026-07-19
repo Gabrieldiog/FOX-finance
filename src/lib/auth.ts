@@ -22,6 +22,14 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     password: { hash: hashPassword, verify: verifyPassword },
   },
+  // Cache de sessão no cookie (assinado com o BETTER_AUTH_SECRET): a maioria das
+  // navegações lê a sessão do próprio cookie em vez de bater no banco a cada
+  // getSession. Corta uma ida ao banco por página — o que pesa muito quando o
+  // banco está longe. O sign-out limpa o cookie; uma mudança de dado da conta
+  // leva no máximo o maxAge pra refletir.
+  session: {
+    cookieCache: { enabled: true, maxAge: 5 * 60 },
+  },
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
       const body = (ctx.body ?? {}) as Record<string, unknown>;
