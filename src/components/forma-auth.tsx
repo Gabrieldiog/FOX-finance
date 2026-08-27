@@ -69,11 +69,21 @@ export function FormaAuth({ modo: inicial }: { modo: Modo }) {
 
     if (error) {
       setCarregando(false);
+      // Falha NOSSA não pode virar acusação contra quem está tentando entrar.
+      // Sem este ramo, um 500 (banco fora, por exemplo) caía no genérico e
+      // dizia "E-mail ou senha inválidos" — a pessoa então tenta de novo, erra
+      // de novo, e ainda leva a trava de tentativas por cima.
+      const doServidor = !error.status || error.status >= 500;
+
       if (criar && error.code === "USER_ALREADY_EXISTS") setErro("Esse e-mail já tem conta — é só entrar.");
       else if (error.status === 429) setErro(error.message ?? "Muitas tentativas. Espere um pouco.");
       else if (criar && error.status === 400 && error.message) setErro(error.message);
+      else if (doServidor) setErro("O servidor não respondeu. Não foi você — tente de novo em instantes.");
       else setErro(criar ? "Não foi possível criar a conta." : "E-mail ou senha inválidos.");
-      setTimeout(() => setErro(null), 2600);
+
+      // A mensagem some sozinha depois de um tempo, menos quando o problema é
+      // nosso: essa a pessoa precisa conseguir ler com calma.
+      if (!doServidor) setTimeout(() => setErro(null), 2600);
       return;
     }
     setSucesso(true);

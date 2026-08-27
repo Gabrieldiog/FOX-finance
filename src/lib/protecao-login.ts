@@ -16,13 +16,25 @@ export function normalizarEmail(email: unknown): string | null {
   return e.includes("@") ? e : null;
 }
 
-/** Se a conta está travada, retorna até quando. Senão, null. */
+/**
+ * Se a conta está travada, retorna até quando. Senão, null.
+ *
+ * Roda dentro do hook `before` do login, antes de qualquer verificação. Se ela
+ * lançar, o endpoint inteiro devolve 500 e ninguém entra — então o banco fora
+ * derrubava o login por completo, e a tela ainda acusava a senha da pessoa.
+ * Aqui a falha de leitura vira "não está travado": o caminho normal segue e o
+ * erro aparece onde deve, na verificação de credencial.
+ */
 export async function bloqueadoAte(email: string): Promise<Date | null> {
-  const [row] = await db
-    .select({ lockedUntil: loginAttempt.lockedUntil })
-    .from(loginAttempt)
-    .where(eq(loginAttempt.email, email));
-  if (row?.lockedUntil && row.lockedUntil.getTime() > Date.now()) return row.lockedUntil;
+  try {
+    const [row] = await db
+      .select({ lockedUntil: loginAttempt.lockedUntil })
+      .from(loginAttempt)
+      .where(eq(loginAttempt.email, email));
+    if (row?.lockedUntil && row.lockedUntil.getTime() > Date.now()) return row.lockedUntil;
+  } catch {
+    // Banco indisponível não é motivo para trancar ninguém — nem para dar 500.
+  }
   return null;
 }
 

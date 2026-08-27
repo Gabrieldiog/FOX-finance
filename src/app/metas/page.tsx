@@ -24,12 +24,15 @@ export default async function Metas() {
     .map((c) => ({ id: c.id, name: c.name, icon: c.icon, color: c.color }));
 
   const planejado = metas.reduce((s, m) => s + m.limitCents, 0);
-  // Média dos 3 meses já fechados (exclui o corrente, que ainda está rolando).
-  const completos = serie.slice(0, 3);
+
+  // Média dos meses já fechados (o corrente ainda está rolando, então sai).
+  // O filtro é o conserto: serieMensal faz zero-fill, e sem ele a divisão era
+  // sempre por 3 — inclusive contando meses em que a conta nem existia, o que
+  // dividia o gasto real por até três.
+  const completos = serie.slice(0, 3).filter((m) => m.entrou > 0 || m.saiu > 0);
   const media = completos.length
     ? Math.round(completos.reduce((s, m) => s + m.saiu, 0) / completos.length)
     : 0;
-  const difMedia = planejado - media;
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 bg-feltro px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] font-grotesk text-creme [padding-top:calc(env(safe-area-inset-top)+1.5rem)]">
@@ -46,27 +49,24 @@ export default async function Metas() {
 
       <section className="rounded-2xl border border-pauta bg-feltro-alto p-6">
         <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-sage">
-          Planejado pro mês que vem
+          Planejado pro mês
         </p>
         <p className="mt-2 font-serif text-[2.25rem] font-semibold leading-none tnum text-brilho">
           {formatBRL(planejado)}
         </p>
         <p className="mt-3 text-sm text-sage">
+          {/* A frase antiga SUBTRAÍA grandezas diferentes: o planejado só cobre
+              as categorias com meta, e a média é o gasto de TODAS. A diferença
+              entre as duas não significa nada — e aparecia em verde, dizendo
+              "a menos no plano", para quem estava estourando. Agora as duas são
+              mostradas lado a lado, sem inventar uma conta entre elas. */}
           {planejado === 0 ? (
             "Defina metas abaixo pra montar seu plano de gastos do mês."
           ) : media > 0 ? (
             <>
-              Nos últimos 3 meses você gastou{" "}
-              <span className="text-creme">{formatBRL(media)}</span> por mês, em média —{" "}
-              {difMedia === 0 ? (
-                "seu plano bate com a média."
-              ) : difMedia < 0 ? (
-                <span className="text-brilho">
-                  {formatBRL(Math.abs(difMedia))} a menos no plano.
-                </span>
-              ) : (
-                <span className="text-brasa">{formatBRL(difMedia)} a mais no plano.</span>
-              )}
+              Suas metas cobrem <span className="text-creme">{formatBRL(planejado)}</span> dos{" "}
+              <span className="text-creme">{formatBRL(media)}</span> que você gasta por mês, em
+              média {completos.length === 1 ? "no último mês" : `nos últimos ${completos.length} meses`}.
             </>
           ) : (
             "Soma das suas metas."

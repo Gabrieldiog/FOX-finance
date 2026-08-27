@@ -11,25 +11,32 @@ export function GerirRecorrencias({ recorrencias }: { recorrencias: RecorrenciaV
   const router = useRouter();
   const [lista, setLista] = useState(recorrencias);
   const [ocupado, setOcupado] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
 
   async function alternar(id: string, ativaAgora: boolean) {
     setOcupado(id);
+    setErro(null);
     const res = await definirRecorrenciaAtiva(id, !ativaAgora);
     setOcupado(null);
     if (res.ok) {
       setLista((l) => l.map((r) => (r.id === id ? { ...r, active: !ativaAgora } : r)));
       router.refresh();
+      return;
     }
+    setErro(res.erro);
   }
 
   async function apagar(id: string) {
     setOcupado(id);
+    setErro(null);
     const res = await excluirRecorrencia(id);
     setOcupado(null);
     if (res.ok) {
       setLista((l) => l.filter((r) => r.id !== id));
       router.refresh();
+      return;
     }
+    setErro(res.erro);
   }
 
   if (lista.length === 0) {
@@ -43,6 +50,8 @@ export function GerirRecorrencias({ recorrencias }: { recorrencias: RecorrenciaV
 
   return (
     <div className="flex flex-col gap-2">
+      {erro && <p className="text-sm font-medium text-alerta">{erro}</p>}
+
       {lista.map((r) => {
         const entrou = r.type === "income";
         const nome = r.description || r.categoryName || "Sem categoria";
