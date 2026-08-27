@@ -29,8 +29,14 @@ export default async function Home({
 
   const sp = await searchParams;
   const periodo: Periodo = sp.periodo === "semana" ? "semana" : "mes";
-  const r = await resumoDoPeriodo(session.user.id, periodo);
-  const ultimos = await listRecentTransactions(session.user.id, 15);
+  // Em paralelo: são leituras independentes, e com o pipelining ligado (ver o
+  // comentário do prepare em src/db/index.ts) as duas viajam numa ida só.
+  // materializarRecorrencias fica FORA do Promise.all de propósito — ele
+  // escreve, e o que ele grava precisa aparecer nestas duas leituras.
+  const [r, ultimos] = await Promise.all([
+    resumoDoPeriodo(session.user.id, periodo),
+    listRecentTransactions(session.user.id, 15),
+  ]);
   const sobrou = r.saldo >= 0;
   const maior = Math.max(1, ...r.categorias.map((c) => c.total));
   const vazio = r.entrou === 0 && r.saiu === 0 && ultimos.length === 0;

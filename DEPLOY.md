@@ -6,7 +6,9 @@ O Fox é um app Next.js; a Vercel detecta tudo sozinha. O único cuidado é a co
 
 Em produção, use a **connection string do POOLER** (transaction mode), não a conexão direta — a Vercel é serverless e a direta esgota conexão rápido. No painel do Supabase: **Project Settings → Database → Connection string → Transaction** (porta `6543`, host `...pooler.supabase.com`).
 
-O código já usa `prepare: false` + `max: 1`, que é o que o pooler transaction exige.
+O código usa `prepare: true` + `max: 3` + `fetch_types: false` (ver os comentários em `src/db/index.ts`). O Supavisor aceita prepared statements em transaction mode, e é isso que mantém o pipelining ligado — com `prepare: false`, quatro queries em paralelo custavam 8,5 idas ao banco em vez de 1,1.
+
+**A região importa mais que tudo.** O `vercel.json` fixa a função em `gru1` (São Paulo), do lado do banco em `sa-east-1`. Antes disso a função rodava em `iad1` (Washington) e cada query cruzava o continente. Se um dia você mudar a região do banco, mude a do `vercel.json` junto — dá pra conferir pelo header `X-Vercel-Id`, que deve mostrar `gru1::gru1`.
 
 ## 2. Vercel
 

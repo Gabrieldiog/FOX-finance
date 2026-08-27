@@ -104,8 +104,10 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
         setErro(res.erro);
         return;
       }
+      // Sem router.refresh() aqui: criarRecorrencia já faz revalidatePath("/")
+      // no servidor (actions.ts). O refresh só mandava renderizar a home uma
+      // SEGUNDA vez, depois da navegação — o dobro da espera para ver a mesma tela.
       router.push("/");
-      router.refresh();
       return;
     }
 
@@ -133,7 +135,6 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
       return;
     }
     router.push("/");
-    router.refresh();
   }
 
   async function excluir() {
@@ -147,7 +148,6 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
       return;
     }
     router.push("/");
-    router.refresh();
   }
 
   const chipData = (on: boolean) =>
