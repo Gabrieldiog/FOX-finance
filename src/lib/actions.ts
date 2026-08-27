@@ -20,6 +20,7 @@ import {
   deleteCategory,
 } from "@/lib/data/categories";
 import { deleteBudget, setBudget } from "@/lib/data/budgets";
+import { setCustos } from "@/lib/data/custos";
 import {
   createRecurring,
   deleteRecurring,
@@ -304,5 +305,39 @@ export async function excluirConta() {
   const userId = await sessaoUserId();
   if (!userId) return { ok: false as const, erro: "Não autenticado." };
   await db.delete(user).where(eq(user.id, userId));
+  return { ok: true as const };
+}
+
+// ── Ganhos de app: configuração de custo ───────────────────────────────────
+// Os limites são sanitários, iguais aos das outras actions: barram absurdo e
+// digitação errada, sem opinar sobre o que é um valor "razoável".
+const custosSchema = z.object({
+  fuelPriceCents: z.number().int().min(0).max(100_000),
+  kmPerLiterCenti: z.number().int().min(0).max(20_000),
+  maintenanceCentsPerKm: z.number().int().min(0).max(10_000),
+  vehicleValueCents: z.number().int().min(0).max(100_000_000_00),
+  vehicleLifetimeKm: z.number().int().min(1).max(2_000_000),
+  depreciationFactorCenti: z.number().int().min(0).max(100),
+  fixedCostCentsPerMonth: z.number().int().min(0).max(100_000_000_00),
+  workedDaysPerMonth: z.number().int().min(1).max(31),
+  targetCentsPerHour: z.number().int().min(0).max(1_000_000),
+  includeReturnTrip: z.boolean(),
+});
+
+export async function salvarCustos(raw: unknown) {
+  const userId = await sessaoUserId();
+  if (!userId) return { ok: false as const, erro: "Não autenticado." };
+
+  const parsed = custosSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false as const, erro: "Dados inválidos." };
+
+  try {
+    await setCustos(userId, parsed.data);
+  } catch {
+    return { ok: false as const, erro: "Não foi possível salvar." };
+  }
+
+  revalidatePath("/ganhos/ajustes");
+  revalidatePath("/ganhos/vale-a-pena");
   return { ok: true as const };
 }

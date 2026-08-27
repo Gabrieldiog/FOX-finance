@@ -41,6 +41,14 @@ export default async function Conta() {
       />
 
       <Link
+        href="/ganhos/vale-a-pena"
+        className="flex h-13 items-center justify-between rounded-xl border border-pauta bg-feltro-alto px-4 font-medium text-creme transition hover:border-brilho/50 active:scale-[.98]"
+      >
+        Vale a pena essa corrida?
+        <span className="font-serif text-brilho">→</span>
+      </Link>
+
+      <Link
         href="/recorrencias"
         className="flex h-13 items-center justify-between rounded-xl border border-pauta bg-feltro-alto px-4 font-medium text-creme transition hover:border-brilho/50 active:scale-[.98]"
       >
