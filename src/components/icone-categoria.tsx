@@ -154,6 +154,16 @@ const CAMINHOS: Record<string, ReactNode> = {
   pix: (
     <path d="M9.3 4.1a3.8 3.8 0 0 1 5.4 0l5.2 5.2a3.8 3.8 0 0 1 0 5.4l-5.2 5.2a3.8 3.8 0 0 1-5.4 0l-5.2-5.2a3.8 3.8 0 0 1 0-5.4Z" />
   ),
+  // Bomba de combustível: quem roda de carro lança gasolina quase todo dia, e
+  // "car" já é o Transporte.
+  fuel: (
+    <>
+      <path d="M4.5 20.5V5.5A2 2 0 0 1 6.5 3.5h5a2 2 0 0 1 2 2v15" />
+      <path d="M3 20.5h12" />
+      <path d="M6.8 7.2h4.4v3.4H6.8z" />
+      <path d="M13.5 9.5h2.6a1.9 1.9 0 0 1 1.9 1.9v5.2a1.6 1.6 0 0 0 3.2 0V9.6l-2.4-2.4" />
+    </>
+  ),
   dots: (
     <>
       <circle cx="5.5" cy="12" r="1.35" fill="currentColor" stroke="none" />
@@ -163,19 +173,36 @@ const CAMINHOS: Record<string, ReactNode> = {
   ),
 };
 
+// Props comuns a todo ícone daqui: 24×24, traço de 1.75 herdando a cor de quem
+// envolve. Fica num lugar só pra a lixeira nunca destoar das categorias.
+const TRACO: SVGProps<SVGSVGElement> = {
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.75,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  "aria-hidden": true,
+};
+
 export function IconeCategoria({ nome, ...props }: { nome: string } & SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
+    <svg {...TRACO} {...props}>
       {CAMINHOS[nome] ?? CAMINHOS.dots}
+    </svg>
+  );
+}
+
+// Lixeira. Fica FORA do CAMINHOS de propósito: aquele mapa é o catálogo que o
+// usuário escolhe ao criar uma categoria, e ninguém quer uma categoria "Lixeira".
+export function IconeLixeira(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...TRACO} {...props}>
+      <path d="M4.5 6.6h15" />
+      <path d="M9.6 6.6V5.1A1.6 1.6 0 0 1 11.2 3.5h1.6a1.6 1.6 0 0 1 1.6 1.6v1.5" />
+      <path d="M6.7 6.6l.8 12.4a1.6 1.6 0 0 0 1.6 1.5h5.8a1.6 1.6 0 0 0 1.6-1.5l.8-12.4" />
+      <path d="M10.4 10.4v6.2" />
+      <path d="M13.6 10.4v6.2" />
     </svg>
   );
 }

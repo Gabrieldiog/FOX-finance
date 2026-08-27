@@ -26,6 +26,7 @@ export const ICONES_CATEGORIA = [
   "salary",
   "plus",
   "pix",
+  "fuel",
   "dots",
 ] as const;
 
