@@ -124,3 +124,45 @@ export const budget = pgTable(
     check("budget_limit_positivo", sql`${t.limitCents} > 0`),
   ],
 );
+
+// Configuração de custo de quem roda de aplicativo. Uma linha por usuário — o
+// user_id é a própria chave primária, então duplicata é impossível por
+// construção, sem precisar de constraint extra.
+//
+// Nada aqui é obrigatório no primeiro acesso: quem nunca abriu os ajustes não
+// tem linha nenhuma, e a camada de dados devolve os mesmos defaults declarados
+// abaixo. Sem isso, a calculadora exigiria um cadastro antes de responder
+// qualquer coisa.
+export const costSetting = pgTable(
+  "cost_setting",
+  {
+    userId: text("user_id")
+      .primaryKey()
+      .references(() => user.id, { onDelete: "cascade" }),
+    fuelPriceCents: integer("fuel_price_cents").notNull().default(600),
+    // Centésimos de km/l: 30 km/l vira 3000. Inteiro escalado em vez de decimal,
+    // pela mesma razão que o dinheiro é centavo inteiro (ver DECISOES.md).
+    kmPerLiterCenti: integer("km_per_liter_centi").notNull().default(3000),
+    maintenanceCentsPerKm: integer("maintenance_cents_per_km").notNull().default(15),
+    vehicleValueCents: bigint("vehicle_value_cents", { mode: "number" }).notNull().default(0),
+    vehicleLifetimeKm: integer("vehicle_lifetime_km").notNull().default(100000),
+    // Centésimos: 0,60 vira 60.
+    depreciationFactorCenti: integer("depreciation_factor_centi").notNull().default(60),
+    fixedCostCentsPerMonth: bigint("fixed_cost_cents_per_month", { mode: "number" })
+      .notNull()
+      .default(0),
+    workedDaysPerMonth: integer("worked_days_per_month").notNull().default(22),
+    targetCentsPerHour: integer("target_cents_per_hour").notNull().default(2500),
+    includeReturnTrip: boolean("include_return_trip").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    check("cost_preco_nao_negativo", sql`${t.fuelPriceCents} >= 0`),
+    check("cost_consumo_nao_negativo", sql`${t.kmPerLiterCenti} >= 0`),
+    check("cost_manutencao_nao_negativa", sql`${t.maintenanceCentsPerKm} >= 0`),
+    check("cost_dias_validos", sql`${t.workedDaysPerMonth} between 0 and 31`),
+    check("cost_fator_valido", sql`${t.depreciationFactorCenti} between 0 and 100`),
+    check("cost_vida_util_nao_negativa", sql`${t.vehicleLifetimeKm} >= 0`),
+  ],
+);
