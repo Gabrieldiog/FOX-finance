@@ -75,10 +75,9 @@ centavos inteiros" —, e ela **conflita com o brief** (ver Conflito C).
 `scripts/seed.ts`. Logo, a Raíssa também as vê na lista dela — o que é inofensivo, ela
 simplesmente não usa.
 
-> ⚠️ **Pendência bloqueante para a Fase B:** o seed é um comando manual e **pode não ter sido
-> rodado em produção ainda**. Sem ele, a categoria "Corridas" não existe no banco e a Fase B não
-> tem em que se ancorar. Confirmar com
-> `DATABASE_URL="<pooler>" npm run db:seed` (esperado: `criadas 3 categorias globais (16 no total)`).
+> ⚠️ **Verificado em produção: o seed NÃO rodou.** Só as 13 categorias antigas estão lá (ver
+> Conflito H). Isso deixou de bloquear a Fase B por causa da decisão do Conflito E, mas continua
+> valendo rodar.
 
 ### 4. Existe tabela de preferências por usuário?
 
@@ -115,8 +114,8 @@ linka `/recorrencias` desse jeito.
 
 ## PARTE 2 — Conflitos com o brief
 
-O brief manda parar e avisar em vez de adivinhar. São sete. **Nenhum é grave**, mas os três
-primeiros mudam código.
+O brief manda parar e avisar em vez de adivinhar. São oito. Nenhum é impeditivo: os três
+primeiros mudam código, o E e o H foram **resolvidos com verificação**, e o resto é registro.
 
 ### Conflito A — "identificadores em inglês, camelCase, como o resto do código" (§1.6)
 
@@ -173,24 +172,24 @@ cálculo.
 
 **Proponho criar `DECISOES.md` na raiz**, na Tarefa 1, já com as decisões deste plano.
 
-### Conflito E — como identificar "a categoria Corridas" (§6.2)
+### Conflito E — como identificar "a categoria Corridas" (§6.2) — **RESOLVIDO**
 
-O brief diz "quando `type = 'income'` **e** a categoria for Corridas, revele um bloco extra".
-Mas identificar categoria **por nome** é frágil: nada impede alguém de criar uma categoria
-privada chamada "Corridas", e o nome da global pode ser editado no seed um dia.
+O brief diz "quando `type = 'income'` **e** a categoria for Corridas, revele o bloco extra".
+Verifiquei e **não vamos ancorar em categoria nenhuma**, por três motivos que se somam:
 
-Três saídas, e **preciso da sua escolha** (registro em `DECISOES.md`):
+1. **A categoria não existe em produção.** Verifiquei ao vivo (ver Conflito H): o seed nunca
+   rodou lá. Ancorar na categoria deixaria a Fase B dependente de um comando manual.
+2. **Nome é frágil.** Nada impede alguém de criar uma categoria privada chamada "Corridas", e
+   renomear a global quebraria o módulo em silêncio.
+3. **A âncora já existe e é melhor:** quem marca um lançamento como "de app" é a **existência
+   do `rideDetail`**, com sua `platform`. A categoria nunca precisou ser a fonte da verdade.
 
-1. **Por id, resolvido em runtime** — busca `category where user_id is null and name = 'Corridas'`
-   e guarda o id. Simples, zero mudança de schema, mas ainda depende do nome existir.
-2. **Coluna `slug` em `category`** — `slug: text` único para as globais (`corridas`,
-   `combustivel`). Robusto e permite renomear o rótulo sem quebrar nada. Mexe numa tabela
-   existente, mas **não** na `transaction` (o brief só proíbe a `transaction`).
-3. **Sem âncora em categoria** — o bloco extra aparece sempre que `type = 'income'`, e a
-   plataforma é que marca o lançamento como "de app".
+**Decisão:** o bloco extra aparece quando `type === 'income'`, atrás de um toggle discreto
+*"Foi corrida de app?"* que lembra a última escolha. A categoria fica livre — quem quiser usar
+"Corridas" usa, quem preferir outra também. O painel lê `rideDetail`, não categoria.
 
-**Minha recomendação: opção 2.** É a única que sobrevive a renomear a categoria, e o custo é uma
-coluna nullable numa tabela que não é a proibida.
+Isso é uma divergência de comportamento em relação ao §6.2, então está registrada aqui de
+propósito. Ganho: nenhuma mudança na tabela `category`, e a Fase B deixa de depender do seed.
 
 ### Conflito F — "Fase A: zero impacto no que existe" (§4)
 
@@ -205,6 +204,22 @@ linhas em `src/app/conta/page.tsx`, sem alterar comportamento nenhum.
 Correto, e vou respeitar. Só registro: **a Inter é órfã** — auditei hoje e ela não pinta um
 único caractere, custando 48 KB de preload em toda página. Não faz parte deste módulo; fica
 anotado para um PR separado.
+
+### Conflito H — o seed nunca rodou em produção — **VERIFICADO**
+
+Testei ao vivo em `fox-finance.vercel.app`: criei uma conta temporária, li as categorias que a
+produção serve e apaguei a conta depois (confirmado com HTTP 401 na credencial apagada).
+
+Resultado: **as 13 categorias antigas estão lá; `Corridas`, `Combustível` e `Carro` não.**
+O código do PR #32 está no ar, mas o `npm run db:seed` é comando manual e não foi executado.
+
+Com a decisão do Conflito E isso **deixou de bloquear** a Fase B. Continua valendo rodar, para
+quem quiser categorizar como "Corridas":
+
+```bash
+DATABASE_URL="<pooler do Supabase>" npm run db:seed
+# esperado: criadas 3 categorias globais (16 no total)
+```
 
 ---
 
@@ -886,34 +901,55 @@ calculadora é 100% local: reage a cada tecla sem ida ao servidor, porque `avali
 
 Valor oferecido, distância, minutos. Sem botão de calcular.
 
-- [ ] **Passo 2: O indicador, com a regra dura do brief**
+- [ ] **Passo 2: O indicador — decidido por medição**
 
-O brief deixou a **forma** por minha conta e fixou só a regra: as três faixas têm que
-sobreviver em escala de cinza.
+O brief deixou a **forma** por minha conta e fixou a regra: as três faixas têm que sobreviver
+em escala de cinza. Medi os tokens atuais e a restrição §1.4 ("nenhum token de cor novo")
+**não sobrevive ao teste**:
 
-Proposta, usando **só tokens que já existem** na paleta verde-feltro (nenhum token novo, como
-manda a restrição §1.4):
+| Veredito | Token atual | OKLCH L | Em cinza |
+|---|---|---|---|
+| RECUSA | `--color-alerta` | 0,710 | 33,4% |
+| LIMITE | `--color-brasa` | 0,724 | 35,8% |
+| ACEITA | `--color-brilho` | 0,760 | 47,4% |
 
-| Veredito | Token existente | Luminosidade OKLCH aproximada |
-|---|---|---|
-| RECUSA | `--color-alerta` `#f2795f` | **0,68** |
-| LIMITE | `--color-brasa` `#f4841f` | **0,72** |
-| ACEITA | `--color-brilho` `#38d07d` | **0,77** |
+RECUSA e LIMITE diferem em **0,014 de luminosidade**. O contraste entre o extremo claro e o
+escuro é **1,37:1**, quando o mínimo para distinguir elementos gráficos é 3:1. Em cinza, as
+duas primeiras faixas são a mesma cor — exatamente o defeito que o brief manda evitar.
 
-> ⚠️ **Isto reproduz exatamente o defeito que o brief do Turno diagnosticou**: 0,68 / 0,72 /
-> 0,77 são praticamente a mesma luminosidade. Em escala de cinza as três somem.
->
-> Como não posso criar token de cor novo (§1.4), a separação tem que vir de **outra dimensão
-> que não a cor**. Proponho três camadas redundantes:
-> 1. **A palavra**, grande e sempre visível — o brief chama de segunda camada e ela é a que
->    salva o componente.
-> 2. **Preenchimento**: RECUSA sólido, LIMITE hachurado, ACEITA vazado com contorno grosso.
->    Padrão sobrevive a escala de cinza e a daltonismo.
-> 3. **Posição** do indicador na escala, que já é informação por si.
->
-> **Preciso da sua decisão:** aceito criar 3 tokens novos derivados da paleta (o que
-> contrariaria §1.4 mas resolveria por luminosidade, como o brief do Turno queria), ou fico na
-> redundância por forma? Registro em `DECISOES.md` de qualquer jeito.
+**Decisão, em duas camadas que se somam:**
+
+**(a) Três tokens de arco com a luminosidade separada, mantendo os matizes da paleta.** Isto
+diverge do §1.4, e diverge de propósito: o objetivo daquela regra é preservar a identidade
+verde-feltro, e ela fica preservada — os matizes são exatamente os de `alerta` (33,4°),
+`brasa` (55,3°) e `brilho` (154,2°). Só a luminosidade muda. Os valores saíram de uma busca
+que maximiza o pior par adjacente:
+
+```css
+--veredito-recusa: oklch(0.41 0.15 33.4);   /* #891a00 — a mais escura */
+--veredito-limite: oklch(0.79 0.14 55.3);   /* #ffa15c — a mais clara  */
+--veredito-aceita: oklch(0.56 0.13 154.2);  /* #1d8a50 — intermediária */
+```
+
+Pior par adjacente: **2,17:1** (contra 1,37:1 hoje). RECUSA↔LIMITE chega a 4,73:1.
+
+**(b) Forma, porque só a cor não fecha.** Mesmo otimizado, 2,17:1 ainda fica abaixo de 3:1 —
+é um teto físico, com três matizes fixos e croma alto dentro do sRGB. Então a segunda camada
+não é enfeite:
+
+| Veredito | Preenchimento |
+|---|---|
+| RECUSA | sólido |
+| LIMITE | listrado a 45° |
+| ACEITA | vazado, com contorno grosso |
+
+Padrão sobrevive a escala de cinza, a daltonismo e a sol na tela. Some a cor inteira e as três
+continuam distintas.
+
+**(c) A palavra**, grande, que o brief já pede — a terceira redundância.
+
+Detalhe de acabamento: no estado vazado, o texto usa a própria cor do contorno, não a cor de
+fundo, senão fica escuro sobre escuro.
 
 - [ ] **Passo 3: As duas linhas de resumo, fixas**
 
@@ -1003,15 +1039,21 @@ Itens do §8 que só as Fases B e C alcançam, e que **não** valem como aceite 
 
 ---
 
-## PARTE 6 — O que preciso de você antes de começar
+## PARTE 6 — As quatro dúvidas, resolvidas
 
-1. **Conflito E** — como marcar um lançamento como "de app"? Minha recomendação é a coluna
-   `slug` em `category`. Sem isso a Fase B não tem âncora confiável.
-2. **Task 6, Passo 2** — três tokens de cor novos para separar os vereditos por luminosidade,
-   ou redundância por forma dentro da paleta atual?
-3. **Seed em produção** — confirmar que `npm run db:seed` já rodou lá, senão a categoria
-   "Corridas" não existe.
-4. **Confirmação dos Conflitos A, B, C** — sigo a convenção real do repositório em vez da que o
-   brief descreve?
+Nenhuma ficou em aberto. Três foram decididas por verificação, uma por medição.
 
-Nada foi editado além deste arquivo. Aguardando aprovação, como o §0 pede.
+| # | Dúvida | Resolução |
+|---|---|---|
+| 1 | Como marcar um lançamento "de app"? | **Pela existência do `rideDetail`**, não por categoria. Toggle "Foi corrida de app?" no formulário. Não mexe em `category`, e não depende do seed. (Conflito E) |
+| 2 | Tokens novos ou redundância por forma? | **Os dois.** Medi: os tokens atuais dão 1,37:1 em cinza. Três tokens de arco com matiz preservado sobem para 2,17:1, e a forma cobre o resto. (Task 6, Passo 2) |
+| 3 | O seed já rodou em produção? | **Não.** Verificado ao vivo: só as 13 categorias antigas existem. Deixou de bloquear por causa da decisão 1. (Conflito H) |
+| 4 | Sigo a convenção real do repo? | **Sim.** A do §1.6 não bate com o código. Schema e data layer em inglês, actions e componentes em português. (Conflitos A, B, C) |
+
+A única divergência do brief que quero deixar em destaque, porque é deliberada: **os três
+tokens de cor do veredito contrariam a letra do §1.4.** Cumprir "nenhum token novo" e
+"distinguível em cinza" ao mesmo tempo é impossível — os tokens que existem dão 1,37:1. Preservei
+o espírito da regra (identidade verde-feltro, matizes intactos) e abri mão da letra. Se preferir
+o contrário, é só dizer: fico só na camada de forma e o arco usa os tokens atuais.
+
+Nada de código foi editado. Aguardando o "pode ir".
