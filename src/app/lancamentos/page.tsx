@@ -13,7 +13,7 @@ const PASSO = 30;
 export default async function Lancamentos({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; tipo?: string; mostrar?: string }>;
+  searchParams: Promise<{ q?: string; tipo?: string; antes?: string; antesId?: string }>;
 }) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/entrar");
@@ -21,19 +21,38 @@ export default async function Lancamentos({
   const sp = await searchParams;
   const q = sp.q ?? "";
   const tipo = sp.tipo === "expense" || sp.tipo === "income" ? sp.tipo : undefined;
-  const mostrar = Math.min(Math.max(Number(sp.mostrar) || PASSO, PASSO), 300);
 
-  // Traz mostrar+1 pra saber se ainda há mais além do que exibimos.
-  const linhas = await searchTransactions(session.user.id, { q, tipo, limit: mostrar });
-  const temMais = linhas.length > mostrar;
-  const itens = temMais ? linhas.slice(0, mostrar) : linhas;
+  // Cursor: a data e o id do último lançamento da página anterior. Ambos
+  // precisam ser válidos, senão a página começa do início — link estragado
+  // não pode virar erro na cara de quem clicou.
+  const dataAntes = sp.antes ? new Date(sp.antes) : null;
+  const antes =
+    dataAntes && !Number.isNaN(dataAntes.getTime()) && sp.antesId
+      ? { occurredAt: dataAntes, id: sp.antesId }
+      : undefined;
+
+  // Traz PASSO+1 pra saber se ainda há mais além do que exibimos.
+  const linhas = await searchTransactions(session.user.id, { q, tipo, limit: PASSO, antes });
+  const temMais = linhas.length > PASSO;
+  const itens = temMais ? linhas.slice(0, PASSO) : linhas;
   const grupos = agruparPorDia(itens);
   const buscando = q.trim() !== "" || tipo != null;
+  const paginado = antes != null;
 
+  // Link da próxima página: ancorado no ÚLTIMO item desta.
   const paramsMais = new URLSearchParams();
   if (q.trim()) paramsMais.set("q", q.trim());
   if (tipo) paramsMais.set("tipo", tipo);
-  paramsMais.set("mostrar", String(mostrar + PASSO));
+  const ultimo = itens[itens.length - 1];
+  if (ultimo) {
+    paramsMais.set("antes", ultimo.occurredAt.toISOString());
+    paramsMais.set("antesId", ultimo.id);
+  }
+
+  // Link de volta ao começo, preservando busca e filtro.
+  const paramsInicio = new URLSearchParams();
+  if (q.trim()) paramsInicio.set("q", q.trim());
+  if (tipo) paramsInicio.set("tipo", tipo);
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 bg-feltro px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] font-grotesk text-creme [padding-top:calc(env(safe-area-inset-top)+1.5rem)]">
@@ -56,10 +75,21 @@ export default async function Lancamentos({
             <IconeCategoria nome={buscando ? "dots" : "receipt"} className="h-7 w-7" />
           </span>
           <p className="text-sm text-sage">
-            {buscando
-              ? "Nada encontrado com esses filtros."
-              : "Você ainda não registrou nenhum lançamento."}
+            {paginado
+              ? "Chegou ao fim do seu histórico."
+              : buscando
+                ? "Nada encontrado com esses filtros."
+                : "Você ainda não registrou nenhum lançamento."}
           </p>
+          {/* Sem esta saída, uma última página vazia deixaria a pessoa presa. */}
+          {paginado && (
+            <Link
+              href={`/lancamentos${paramsInicio.toString() ? `?${paramsInicio}` : ""}`}
+              className="flex h-12 items-center justify-center rounded-xl border border-pauta px-5 font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:border-brilho hover:text-brilho"
+            >
+              ← Voltar ao mais recente
+            </Link>
+          )}
         </section>
       ) : (
         <section className="flex flex-col gap-4">
@@ -74,15 +104,24 @@ export default async function Lancamentos({
             </div>
           ))}
 
-          {temMais && (
-            <Link
-              href={`/lancamentos?${paramsMais.toString()}`}
-              scroll={false}
-              className="mt-1 flex h-12 items-center justify-center rounded-xl border border-pauta font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:border-brilho hover:text-brilho"
-            >
-              Ver mais
-            </Link>
-          )}
+          <div className="mt-1 flex flex-col gap-2">
+            {temMais && (
+              <Link
+                href={`/lancamentos?${paramsMais.toString()}`}
+                className="flex h-12 items-center justify-center rounded-xl border border-pauta font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:border-brilho hover:text-brilho"
+              >
+                Mais antigos →
+              </Link>
+            )}
+            {paginado && (
+              <Link
+                href={`/lancamentos${paramsInicio.toString() ? `?${paramsInicio}` : ""}`}
+                className="flex h-12 items-center justify-center rounded-xl font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:text-creme"
+              >
+                ← Voltar ao mais recente
+              </Link>
+            )}
+          </div>
         </section>
       )}
     </main>

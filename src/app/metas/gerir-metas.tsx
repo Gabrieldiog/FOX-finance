@@ -64,9 +64,14 @@ export function GerirMetas({ categorias, metas }: { categorias: Cat[]; metas: Me
 
   async function remover(categoryId: string) {
     setRemovendo(categoryId);
+    setErro(null);
     const res = await removerMeta(categoryId);
     setRemovendo(null);
-    if (res.ok) router.refresh();
+    if (res.ok) {
+      router.refresh();
+      return;
+    }
+    setErro(res.erro);
   }
 
   return (

@@ -13,15 +13,20 @@ export function GerirCategorias({ categorias }: { categorias: Cat[] }) {
   const router = useRouter();
   const [lista, setLista] = useState(categorias);
   const [apagando, setApagando] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
 
   async function apagar(id: string) {
     setApagando(id);
+    setErro(null);
     const res = await excluirCategoria(id);
     setApagando(null);
     if (res.ok) {
       setLista((l) => l.filter((c) => c.id !== id));
       router.refresh();
+      return;
     }
+    // Sem isto, apertar "Apagar" e nada acontecer parecia travamento.
+    setErro(res.erro);
   }
 
   return (
@@ -29,6 +34,8 @@ export function GerirCategorias({ categorias }: { categorias: Cat[] }) {
       <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-sage">
         Minhas categorias
       </p>
+
+      {erro && <p className="text-sm font-medium text-alerta">{erro}</p>}
 
       {lista.length === 0 ? (
         <div className="rounded-2xl border border-pauta bg-feltro-alto p-5 text-sm text-sage">

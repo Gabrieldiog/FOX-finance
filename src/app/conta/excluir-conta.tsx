@@ -9,14 +9,21 @@ export function ExcluirConta() {
   const router = useRouter();
   const [confirmar, setConfirmar] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
   async function excluir() {
     setExcluindo(true);
+    setErro(null);
     const res = await excluirConta();
     if (!res.ok) {
       setExcluindo(false);
+      // Antes daqui saía um return mudo: a pessoa pedia para apagar a conta,
+      // o botão voltava ao normal e nada dizia se apagou ou não.
+      setErro(res.erro);
       return;
     }
+    // A ORDEM IMPORTA: excluirConta lê a sessão pelo cookie da requisição.
+    // Sair antes deixaria a action sem sessão e a conta nunca seria apagada.
     await authClient.signOut().catch(() => {});
     router.push("/");
     router.refresh();
@@ -39,6 +46,7 @@ export function ExcluirConta() {
       <p className="text-sm">
         Isso apaga sua conta e <strong>todos os seus lançamentos</strong>, pra sempre. Tem certeza?
       </p>
+      {erro && <p className="text-sm font-medium text-alerta">{erro}</p>}
       <div className="flex gap-2">
         <button
           type="button"
