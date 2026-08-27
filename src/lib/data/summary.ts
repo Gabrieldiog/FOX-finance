@@ -116,9 +116,19 @@ function inicioMes(ano: number, mes: number) {
   return sql`(make_timestamp(${ano}, ${mes}, 1, 0, 0, 0) at time zone 'America/Sao_Paulo')`;
 }
 
-// Últimos N meses (mais antigo → atual), com zero-fill: mês sem lançamento vem zerado.
-export async function serieMensal(sessionUserId: string, n = 6): Promise<SerieItem[]> {
-  const { ano, mes } = anoMesSP(new Date());
+// N meses terminando no mês ancorado (mais antigo → mais novo), com zero-fill:
+// mês sem lançamento vem zerado.
+//
+// A âncora existe porque o gráfico de /estatisticas acompanha o mês que a
+// pessoa está olhando. Sem ela, dava para navegar até fevereiro e o gráfico
+// continuar mostrando os últimos 6 meses a partir de HOJE, sem se mexer.
+// Omitir a âncora mantém o comportamento antigo: termina no mês corrente.
+export async function serieMensal(
+  sessionUserId: string,
+  n = 6,
+  ancora?: { ano: number; mes: number },
+): Promise<SerieItem[]> {
+  const { ano, mes } = ancora ?? anoMesSP(new Date());
   const baldes = Array.from({ length: n }, (_, i) => {
     const d = new Date(Date.UTC(ano, mes - 1 - (n - 1 - i), 1));
     return { ano: d.getUTCFullYear(), mes: d.getUTCMonth() + 1 };
@@ -152,9 +162,13 @@ export async function serieMensal(sessionUserId: string, n = 6): Promise<SerieIt
   });
 }
 
-// Últimos N anos, com zero-fill.
-export async function serieAnual(sessionUserId: string, n = 4): Promise<SerieItem[]> {
-  const { ano } = anoMesSP(new Date());
+// N anos terminando no ano ancorado, com zero-fill. Mesma razão da serieMensal.
+export async function serieAnual(
+  sessionUserId: string,
+  n = 4,
+  ancora?: { ano: number },
+): Promise<SerieItem[]> {
+  const { ano } = ancora ?? anoMesSP(new Date());
   const baldes = Array.from({ length: n }, (_, i) => ano - (n - 1 - i));
   const chave = sql<string>`to_char(${transaction.occurredAt} at time zone 'America/Sao_Paulo', 'YYYY')`;
 
@@ -258,4 +272,17 @@ export async function detalheMes(
 // Ano/mês corrente em SP — pra a página escolher o mês padrão.
 export function mesCorrenteSP(): { ano: number; mes: number } {
   return anoMesSP(new Date());
+}
+
+// Como o mesCorrenteSP, mas com o DIA — as metas precisam dele para saber se
+// o mês já acabou e para projetar o ritmo de gasto.
+export function hojeSP(): { ano: number; mes: number; dia: number } {
+  const p = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const num = (t: string) => Number(p.find((x) => x.type === t)!.value);
+  return { ano: num("year"), mes: num("month"), dia: num("day") };
 }

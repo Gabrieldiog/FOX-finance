@@ -4,12 +4,16 @@ import { auth } from "@/lib/auth";
 import { resumoDoPeriodo, type Periodo } from "@/lib/data/summary";
 import { listRecentTransactions } from "@/lib/data/transactions";
 import { materializarRecorrencias } from "@/lib/data/recorrencias";
+import { getMetas, janelaDoMes, movimentoDoMes } from "@/lib/data/metas-mes";
+import { hojeSP } from "@/lib/data/summary";
+import { avaliarMetas } from "@/lib/metas-do-mes";
 import { formatBRL, agruparPorDia } from "@/lib/format";
 import { SairBotao } from "@/components/sair-botao";
 import { FoxGlyph } from "@/components/marca";
 import { NumeroDinheiro } from "@/components/numero-dinheiro";
 import { IconeCategoria } from "@/components/icone-categoria";
 import { ItemLancamento } from "@/components/item-lancamento";
+import { ListaCategorias } from "@/components/lista-categorias";
 import { Aterrissar } from "@/components/aterrissar";
 import { LandingV2 } from "@/components/landing-v2";
 
@@ -33,12 +37,17 @@ export default async function Home({
   // comentário do prepare em src/db/index.ts) as duas viajam numa ida só.
   // materializarRecorrencias fica FORA do Promise.all de propósito — ele
   // escreve, e o que ele grava precisa aparecer nestas duas leituras.
-  const [r, ultimos] = await Promise.all([
+  const hoje = hojeSP();
+  const [r, ultimos, metas, mov] = await Promise.all([
     resumoDoPeriodo(session.user.id, periodo),
     listRecentTransactions(session.user.id, 15),
+    getMetas(session.user.id),
+    movimentoDoMes(session.user.id, hoje.ano, hoje.mes),
   ]);
+
+  // avaliarMetas devolve UMA frase só — duas viram ruído e ninguém lê nenhuma.
+  const av = avaliarMetas(metas, { ...mov, ...janelaDoMes(hoje.ano, hoje.mes, hoje) });
   const sobrou = r.saldo >= 0;
-  const maior = Math.max(1, ...r.categorias.map((c) => c.total));
   const vazio = r.entrou === 0 && r.saiu === 0 && ultimos.length === 0;
   const quando = periodo === "semana" ? "esta semana" : "este mês";
 
@@ -46,14 +55,14 @@ export default async function Home({
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 bg-feltro px-5 pb-[calc(6rem+env(safe-area-inset-bottom))] font-grotesk text-creme [padding-top:calc(env(safe-area-inset-top)+1.5rem)]">
-      <header className="flex items-center justify-between border-b border-pauta pb-4">
-        <span className="flex items-center gap-2">
-          <FoxGlyph className="h-7 w-7" />
+      <header className="flex items-center justify-between gap-3 border-b border-pauta pb-4">
+        <span className="flex min-w-0 items-center gap-2">
+          <FoxGlyph className="h-7 w-7 shrink-0" />
           <span className="font-serif text-xl font-semibold tracking-tight">
             Fox <span className="italic text-brilho">Finance</span>
           </span>
         </span>
-        <div className="flex items-center gap-4 font-mono text-xs uppercase tracking-[0.14em] text-sage">
+        <div className="flex shrink-0 items-center gap-3 font-mono text-xs uppercase tracking-[0.14em] text-sage">
           <Link href="/estatisticas" className="-m-2 inline-flex min-h-11 items-center p-2 transition hover:text-creme">
             Análise
           </Link>
@@ -90,10 +99,52 @@ export default async function Home({
             className={`mt-2 block font-serif text-[clamp(1.75rem,9vw,2.75rem)] font-semibold leading-none tnum ${sobrou ? "text-brilho" : "text-alerta"}`}
           />
           <p className="mt-3 text-sm text-sage">
-            {sobrou ? "No verde — fechou no azul." : "No vermelho neste período."}
+            {sobrou
+              ? periodo === "semana"
+                ? "Isso é o que sobrou pra você nesta semana."
+                : "Isso é o que sobrou pra você neste mês."
+              : periodo === "semana"
+                ? "Você gastou mais do que entrou nesta semana."
+                : "Você gastou mais do que entrou neste mês."}
           </p>
+
+          {/* A frase da meta mora AQUI, colada no número que a pessoa veio ver.
+              Dentro de /metas ela só seria lida por quem já foi procurar — e aí
+              já não muda decisão nenhuma. */}
+          {av.destaque && (
+            <div className="mt-4 flex items-start gap-2.5 border-t border-pauta pt-4">
+              <span
+                aria-hidden
+                className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                  av.gasto?.estado === "estourou" || av.economia?.estado === "negativo"
+                    ? "bg-alerta"
+                    : av.gasto?.estado === "perto"
+                      ? "bg-brasa"
+                      : "bg-brilho"
+                }`}
+              />
+              <p className="text-sm leading-relaxed text-sage">{av.destaque}</p>
+            </div>
+          )}
         </section>
       </Aterrissar>
+
+      {/* Metas mora AQUI agora, e não escondida dentro de Análise: é a tela que
+          se abre toda hora, e a meta só serve se for lembrada antes de gastar. */}
+      <Link
+        href="/metas"
+        className="flex min-h-13 items-center justify-between rounded-2xl border border-pauta bg-feltro-alto px-5 py-3.5 transition hover:border-brilho/50 active:scale-[.99]"
+      >
+        <span className="flex flex-col">
+          <span className="text-sm font-medium text-creme">Minhas metas</span>
+          <span className="text-xs text-sage">
+            {metas.spendLimitCents === 0 && metas.saveTargetCents === 0
+              ? "Defina quanto quer gastar e guardar"
+              : "Quanto gastar e quanto guardar no mês"}
+          </span>
+        </span>
+        <span className="font-serif text-brilho">→</span>
+      </Link>
 
       {/* Entrou / Saiu / Saldo, divididos por pauta fina. */}
       <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-pauta bg-feltro-alto">
@@ -132,33 +183,7 @@ export default async function Home({
       )}
 
       {r.categorias.length > 0 && (
-        <section className="flex flex-col gap-4">
-          <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-sage">
-            Para onde foi · {quando}
-          </p>
-          {r.categorias.map((c) => (
-            <div key={c.name} className="flex items-center gap-3">
-              <span
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                style={{ backgroundColor: `${c.color}1f`, color: c.color }}
-              >
-                <IconeCategoria nome={c.icon} className="h-[18px] w-[18px]" />
-              </span>
-              <div className="flex flex-1 flex-col gap-1.5">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium text-creme">{c.name}</span>
-                  <span className="font-serif tnum text-sage">{formatBRL(c.total)}</span>
-                </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-pauta">
-                  <div
-                    className="h-full rounded-full"
-                    style={{ width: `${(c.total / maior) * 100}%`, backgroundColor: c.color }}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </section>
+        <ListaCategorias titulo={`Para onde foi · ${quando}`} itens={r.categorias} />
       )}
 
       {grupos.length > 0 && (

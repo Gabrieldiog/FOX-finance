@@ -13,6 +13,7 @@ import {
 import { FORMAS_PAGAMENTO } from "@/lib/categorias";
 import { IconeCategoria, IconeLixeira } from "@/components/icone-categoria";
 import { NovaCategoria, type Categoria } from "@/components/nova-categoria";
+import { Calendario } from "@/components/calendario";
 
 type Cat = { id: string; name: string; type: string; icon: string; color: string };
 type Inicial = {
@@ -24,14 +25,6 @@ type Inicial = {
   occurredAt: string; // ISO
   paymentMethod: string | null;
 };
-
-// yyyy-mm-dd no fuso local, pro <input type=date>.
-function paraInput(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const dia = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${dia}`;
-}
 
 export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; inicial?: Inicial }) {
   const router = useRouter();
@@ -58,6 +51,7 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
   const [erro, setErro] = useState<string | null>(null);
   const [cats, setCats] = useState<Cat[]>(categorias);
   const [criandoCat, setCriandoCat] = useState(false);
+  const [calendarioAberto, setCalendarioAberto] = useState(false);
 
   const catsDoTipo = cats.filter((c) => c.type === type);
   const ganho = type === "income";
@@ -331,22 +325,17 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
             >
               Ontem
             </button>
-            <label className={`${chipData(modo === "outro")} relative cursor-pointer`}>
+            {/* Abre o calendário do Fox, não o do sistema: aquele vinha com a
+                cara de outro app e o navegador o posicionava fora da tela no
+                celular. Este é uma folha que sobe de baixo e não tem como
+                escapar do viewport. */}
+            <button
+              type="button"
+              onClick={() => setCalendarioAberto(true)}
+              className={chipData(modo === "outro")}
+            >
               {modo === "outro" && dataOutra ? formatDiaSP(dataOutra) : "Outra"}
-              <input
-                type="date"
-                aria-label="Escolher data"
-                value={dataOutra ? paraInput(dataOutra) : ""}
-                onChange={(e) => {
-                  const [y, m, d] = e.target.value.split("-").map(Number);
-                  if (y && m && d) {
-                    setDataOutra(new Date(y, m - 1, d, 12));
-                    setModo("outro");
-                  }
-                }}
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-              />
-            </label>
+            </button>
           </div>
         </div>
       )}
@@ -398,6 +387,18 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
           {salvando ? "Salvando…" : recorrente ? "Criar recorrência" : "Salvar"}
         </button>
       </div>
+
+      {calendarioAberto && (
+        <Calendario
+          valor={dataOutra}
+          onEscolher={(d) => {
+            setDataOutra(d);
+            setModo("outro");
+            setCalendarioAberto(false);
+          }}
+          onFechar={() => setCalendarioAberto(false)}
+        />
+      )}
 
       {criandoCat && (
         <NovaCategoria

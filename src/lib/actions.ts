@@ -21,6 +21,7 @@ import {
 } from "@/lib/data/categories";
 import { deleteBudget, setBudget } from "@/lib/data/budgets";
 import { setCustos } from "@/lib/data/custos";
+import { setMetas } from "@/lib/data/metas-mes";
 import {
   createRecurring,
   deleteRecurring,
@@ -339,5 +340,31 @@ export async function salvarCustos(raw: unknown) {
 
   revalidatePath("/ganhos/ajustes");
   revalidatePath("/ganhos/vale-a-pena");
+  return { ok: true as const };
+}
+
+// ── As duas metas do mês ───────────────────────────────────────────────────
+// Zero em qualquer uma significa "não quero essa meta", e o app para de falar
+// dela — por isso o mínimo é 0 e não 1.
+const metasSchema = z.object({
+  spendLimitCents: z.number().int().min(0).max(100_000_000_00),
+  saveTargetCents: z.number().int().min(0).max(100_000_000_00),
+});
+
+export async function salvarMetasDoMes(raw: unknown) {
+  const userId = await sessaoUserId();
+  if (!userId) return { ok: false as const, erro: "Não autenticado." };
+
+  const parsed = metasSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false as const, erro: "Dados inválidos." };
+
+  try {
+    await setMetas(userId, parsed.data);
+  } catch {
+    return { ok: false as const, erro: "Não foi possível salvar." };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/metas");
   return { ok: true as const };
 }
