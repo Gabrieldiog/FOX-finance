@@ -69,3 +69,15 @@ sendo os de `alerta` (33,4°), `brasa` (55,3°) e `brilho` (154,2°).
 Isso sobe o pior par para 2,17:1. Como ainda fica abaixo de 3:1 — teto físico com três matizes
 fixos dentro do sRGB —, o preenchimento entra como segunda camada: sólido, listrado e vazado.
 Some a cor inteira e as três continuam distinguíveis.
+
+### Cor de arco não serve como cor de texto
+
+Medido: os tons do arco sobre a superfície do card dão **3,18:1** (aceita) e **1,46:1**
+(recusa) — ilegíveis como texto, que precisa de 4,5:1.
+
+Isso importa para quando o módulo financeiro precisar de `--lucro` e `--custo`: eles **não**
+podem reusar os tons de arco. O Fox já tem `--color-brilho` e `--color-alerta`, que são as
+versões claras e já são o que ele usa hoje para valores que entram e saem. São essas.
+
+A regra geral: preencher uma área grande e escrever uma palavra sobre fundo escuro pedem
+luminosidades diferentes da mesma cor.

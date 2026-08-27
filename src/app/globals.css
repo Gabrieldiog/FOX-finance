@@ -115,6 +115,22 @@
   --color-brilho: #38d07d; /* verde vivo de acento/CTA + valores que entram */
   --color-brasa: #f4841f; /* laranja da raposa, acento mínimo */
   --color-alerta: #f2795f; /* vermelho legível no feltro: valores que saem */
+
+  /* Vereditos da calculadora de corrida. Os matizes são exatamente os de
+     alerta (33,4°), brasa (55,3°) e brilho (154,2°) — a identidade não muda.
+     O que muda é a LUMINOSIDADE, e é ela que faz o medidor funcionar.
+
+     Os tokens acima, usados diretamente, dariam contraste de 1,37:1 entre as
+     faixas em escala de cinza (L 0,710 / 0,724 / 0,760) — RECUSA e LIMITE
+     viram a mesma cor, e o arco deixa de informar justamente para quem tem
+     daltonismo vermelho-verde. Estes valores sobem o pior par para 2,17:1.
+
+     Como 2,17:1 ainda fica abaixo dos 3:1 desejáveis (teto físico com três
+     matizes fixos no sRGB), o preenchimento carrega a segunda camada:
+     sólido / listrado / vazado. Ver DECISOES.md. */
+  --color-veredito-recusa: oklch(0.41 0.15 33.4); /* a mais escura */
+  --color-veredito-limite: oklch(0.79 0.14 55.3); /* a mais clara */
+  --color-veredito-aceita: oklch(0.56 0.13 154.2); /* intermediária */
   --font-serif: var(--fonte-serif);
   --font-grotesk: var(--fonte-grotesk);
   --font-mono: var(--fonte-mono);
