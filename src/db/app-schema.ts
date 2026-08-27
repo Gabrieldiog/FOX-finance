@@ -166,3 +166,29 @@ export const costSetting = pgTable(
     check("cost_vida_util_nao_negativa", sql`${t.vehicleLifetimeKm} >= 0`),
   ],
 );
+
+// As duas metas do mês: quanto a pessoa quer gastar e quanto quer que sobre.
+// Uma linha por usuário — as metas valem todo mês, como o `budget` sempre
+// valeu. Zero em qualquer campo significa "não defini essa meta", e o app
+// simplesmente não fala dela.
+//
+// Isto não substitui a tabela `budget` no banco: ela continua existindo com os
+// dados de quem já usava metas por categoria. O que mudou foi a TELA, que
+// passou a mostrar só estas duas — duas perguntas cabem na cabeça, um teto por
+// categoria não.
+export const monthlyGoal = pgTable(
+  "monthly_goal",
+  {
+    userId: text("user_id")
+      .primaryKey()
+      .references(() => user.id, { onDelete: "cascade" }),
+    spendLimitCents: bigint("spend_limit_cents", { mode: "number" }).notNull().default(0),
+    saveTargetCents: bigint("save_target_cents", { mode: "number" }).notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    check("goal_gasto_nao_negativo", sql`${t.spendLimitCents} >= 0`),
+    check("goal_economia_nao_negativa", sql`${t.saveTargetCents} >= 0`),
+  ],
+);

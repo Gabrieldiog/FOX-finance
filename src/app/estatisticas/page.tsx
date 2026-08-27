@@ -7,11 +7,10 @@ import {
   mesCorrenteSP,
   serieAnual,
   serieMensal,
-  type CategoriaTotal,
   type SerieItem,
 } from "@/lib/data/summary";
 import { formatBRL } from "@/lib/format";
-import { IconeCategoria } from "@/components/icone-categoria";
+import { ListaCategorias } from "@/components/lista-categorias";
 
 function rotuloMesLongo(ano: number, mes: number) {
   const s = new Date(Date.UTC(ano, mes - 1, 1)).toLocaleDateString("pt-BR", {
@@ -93,41 +92,6 @@ function Delta({ atual, anterior, maiorEhBom }: { atual: number; anterior: numbe
   );
 }
 
-function ListaCategorias({ titulo, itens }: { titulo: string; itens: CategoriaTotal[] }) {
-  const maior = Math.max(1, ...itens.map((c) => c.total));
-  return (
-    <section className="flex flex-col gap-3">
-      <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-sage">{titulo}</p>
-      {itens.length === 0 ? (
-        <p className="text-sm text-sage">Nada neste mês.</p>
-      ) : (
-        itens.map((c) => (
-          <div key={c.name} className="flex items-center gap-3">
-            <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-              style={{ backgroundColor: `${c.color}1f`, color: c.color }}
-            >
-              <IconeCategoria nome={c.icon} className="h-[18px] w-[18px]" />
-            </span>
-            <div className="flex flex-1 flex-col gap-1.5">
-              <div className="flex justify-between text-sm">
-                <span className="font-medium text-creme">{c.name}</span>
-                <span className="font-serif tnum text-sage">{formatBRL(c.total)}</span>
-              </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-pauta">
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${(c.total / maior) * 100}%`, backgroundColor: c.color }}
-                />
-              </div>
-            </div>
-          </div>
-        ))
-      )}
-    </section>
-  );
-}
-
 export default async function Estatisticas({
   searchParams,
 }: {
@@ -163,7 +127,10 @@ export default async function Estatisticas({
   const noFuturo = proxAno > corrente.ano || (proxAno === corrente.ano && proxMes > corrente.mes);
 
   const [serie, atual, ant] = await Promise.all([
-    granularidade === "ano" ? serieAnual(uid, 5) : serieMensal(uid, 6),
+    // A série ACOMPANHA o mês navegado. Antes ela ignorava a âncora e mostrava
+    // sempre os últimos 6 meses a partir de hoje — dava para ir até fevereiro e
+    // o gráfico não se mexer.
+    granularidade === "ano" ? serieAnual(uid, 5, { ano }) : serieMensal(uid, 6, { ano, mes }),
     detalheMes(uid, ano, mes),
     detalheMes(uid, antAno, antMes),
   ]);
@@ -185,13 +152,6 @@ export default async function Estatisticas({
         <span className="w-12" />
       </header>
 
-      <Link
-        href="/metas"
-        className="flex items-center justify-between rounded-2xl border border-pauta bg-feltro-alto px-5 py-3.5 text-sm font-medium transition hover:border-brilho/50"
-      >
-        <span>Metas &amp; projeção do mês</span>
-        <span className="font-serif text-brilho">→</span>
-      </Link>
 
       <div className="flex rounded-full border border-pauta bg-feltro-alto p-1 font-mono text-xs uppercase tracking-[0.12em]">
         <Link href="/estatisticas?g=mes" scroll={false} className={abaClasse(granularidade === "mes")}>
@@ -262,8 +222,8 @@ export default async function Estatisticas({
         setas comparam com {rotuloMesCurto(antAno, antMes)}
       </p>
 
-      <ListaCategorias titulo="Onde mais gastou" itens={atual.gastos} />
-      <ListaCategorias titulo="Onde mais ganhou" itens={atual.ganhos} />
+      <ListaCategorias titulo="Onde mais gastou" itens={atual.gastos} vazio="Nenhum gasto neste mês." />
+      <ListaCategorias titulo="Onde mais ganhou" itens={atual.ganhos} vazio="Nenhum ganho neste mês." />
 
       <a
         href={`/api/relatorio?mes=${chaveMes}`}
