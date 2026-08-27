@@ -91,10 +91,39 @@ export async function createRecurring(sessionUserId: string, input: NovaRecorren
   return row;
 }
 
+// Ao RETOMAR, a recorrência recomeça do próximo vencimento — nunca do start_ym
+// original. Sem isto, retomar uma regra parada há meses mandava a
+// materialização varrer todo o intervalo pausado e gravar cada mês como
+// lançamento real: uma regra de R$ 300 parada há 5 meses virava R$ 1.800 de
+// despesa que nunca existiu, direto no saldo. (Verificado em teste: gerava 6
+// lançamentos de uma vez.)
+//
+// "Próximo vencimento" = este mês se o dia ainda não passou; senão, o mês que
+// vem. Pausar é dizer "não estou pagando isso"; retomar não pode ressuscitar a
+// parcela de um mês cujo dia já venceu enquanto a regra estava parada.
+function proximoVencimentoYm(dayOfMonth: number): string {
+  const { ano, mes, dia } = hojeSP();
+  const aindaVence = dayOfMonth >= dia;
+  const d = new Date(Date.UTC(ano, mes - 1 + (aindaVence ? 0 : 1), 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
 export async function setRecurringActive(sessionUserId: string, id: string, active: boolean) {
+  // Precisa do dia do molde pra saber de que mês ele recomeça.
+  const [atual] = await db
+    .select({ dayOfMonth: recurring.dayOfMonth })
+    .from(recurring)
+    .where(and(eq(recurring.id, id), eq(recurring.userId, sessionUserId)))
+    .limit(1);
+  if (!atual) return null;
+
   const [row] = await db
     .update(recurring)
-    .set({ active, updatedAt: new Date() })
+    .set({
+      active,
+      ...(active ? { startYm: proximoVencimentoYm(atual.dayOfMonth) } : {}),
+      updatedAt: new Date(),
+    })
     .where(and(eq(recurring.id, id), eq(recurring.userId, sessionUserId)))
     .returning({ id: recurring.id });
   return row ?? null;

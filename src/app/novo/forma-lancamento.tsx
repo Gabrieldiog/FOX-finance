@@ -95,8 +95,12 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
         paymentMethod,
         dayOfMonth: diaDoMes,
       });
-      setSalvando(false);
+      // Só destrava no erro. Destravar aqui no sucesso abria uma janela de
+      // ~1s com o botão clicável e a navegação ainda a caminho — e um segundo
+      // toque nervoso (o app é lento, a pessoa acha que travou) gravava o
+      // lançamento duas vezes. Provado com dois cliques em 120ms.
       if (!res.ok) {
+        setSalvando(false);
         setErro(res.erro);
         return;
       }
@@ -123,8 +127,8 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
     const res = editando
       ? await editarLancamento({ id: inicial!.id, ...dados })
       : await criarLancamento(dados);
-    setSalvando(false);
     if (!res.ok) {
+      setSalvando(false);
       setErro(res.erro);
       return;
     }
@@ -137,8 +141,8 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
     setErro(null);
     setExcluindo(true);
     const res = await excluirLancamento(inicial.id);
-    setExcluindo(false);
     if (!res.ok) {
+      setExcluindo(false);
       setErro(res.erro);
       return;
     }

@@ -162,3 +162,32 @@ test("um usuário não pausa nem apaga a recorrência do outro", async () => {
   expect(await db.select().from(recurring).where(eq(recurring.id, regra.id))).toHaveLength(1);
   expect(await deleteRecurring(A, regra.id)).not.toBeNull();
 });
+
+test("retomar uma recorrência parada há meses NÃO gera os meses pausados", async () => {
+  // Regra criada há 5 meses e pausada esse tempo todo: nenhum dinheiro saiu.
+  const s = ymMenos(5);
+  const regra = await createRecurring(A, {
+    type: "expense",
+    amountCents: 30000, // R$ 300 de aluguel
+    dayOfMonth: 1, // dia 1 já venceu em todos esses meses
+    startYm: ymStr(s.ano, s.mes),
+  });
+  await db.update(recurring).set({ active: false }).where(eq(recurring.id, regra.id));
+  expect(await materializarRecorrencias(A)).toBe(0); // pausada não gera nada
+
+  // Retomar tem que valer daqui pra frente. Antes do conserto isto gerava os 6
+  // meses de uma vez — R$ 1.800 de despesa que nunca existiu, direto no saldo.
+  await setRecurringActive(A, regra.id, true);
+  await materializarRecorrencias(A);
+
+  const geradas = await txsDaRegra(A, regra.id);
+  const total = geradas.reduce((s, t) => s + t.amountCents, 0);
+  expect(geradas.length).toBeLessThanOrEqual(1);
+  expect(total).toBeLessThanOrEqual(30000);
+  // e nada pode ter nascido num mês anterior ao de hoje
+  for (const t of geradas) {
+    expect(t.occurrenceYm! >= ymStr(curAno, curMes)).toBe(true);
+  }
+
+  await deleteRecurring(A, regra.id);
+});
