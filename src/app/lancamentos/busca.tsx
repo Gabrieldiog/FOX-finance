@@ -69,7 +69,7 @@ export function BuscaLancamentos({
               key={t.id}
               type="button"
               onClick={() => irPara(q, t.id)}
-              className={`flex-1 rounded-xl border py-2 text-center text-sm font-medium transition ${
+              className={`flex min-h-11 flex-1 items-center justify-center rounded-xl border text-center text-sm font-medium transition ${
                 on ? "border-brilho bg-brilho/10 text-creme" : "border-pauta text-sage"
               }`}
             >

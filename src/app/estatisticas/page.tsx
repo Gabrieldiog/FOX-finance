@@ -170,14 +170,14 @@ export default async function Estatisticas({
   const chaveMes = `${ano}-${String(mes).padStart(2, "0")}`;
 
   const abaClasse = (ativa: boolean) =>
-    `flex-1 rounded-full py-2 text-center transition ${ativa ? "bg-brilho text-feltro" : "text-sage"}`;
+    `flex min-h-11 flex-1 items-center justify-center rounded-full text-center transition ${ativa ? "bg-brilho text-feltro" : "text-sage"}`;
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 bg-feltro px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] font-grotesk text-creme [padding-top:calc(env(safe-area-inset-top)+1.5rem)]">
       <header className="flex items-center justify-between border-b border-pauta pb-4">
         <Link
           href="/"
-          className="font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:text-creme"
+          className="-m-2 inline-flex min-h-11 items-center p-2 font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:text-creme"
         >
           ← Voltar
         </Link>
@@ -210,7 +210,7 @@ export default async function Estatisticas({
           href={`/estatisticas?mes=${antAno}-${String(antMes).padStart(2, "0")}`}
           scroll={false}
           aria-label="Mês anterior"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-pauta text-sage transition hover:text-creme"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-pauta text-sage transition hover:text-creme"
         >
           ‹
         </Link>
@@ -230,27 +230,27 @@ export default async function Estatisticas({
       </div>
 
       <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-pauta bg-feltro-alto">
-        <div className="min-w-0 border-r border-pauta p-3.5">
+        <div className="min-w-0 border-r border-pauta p-2.5 min-[360px]:p-3.5">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-sage">Entrou</p>
-          <p className="mt-1 font-serif text-[clamp(0.72rem,3vw,0.82rem)] leading-tight tnum text-brilho">
+          <p className="mt-1 font-serif text-[clamp(0.58rem,2.7vw,0.82rem)] leading-tight tnum text-brilho">
             {formatBRL(atual.entrou)}
           </p>
           <div className="mt-1">
             <Delta atual={atual.entrou} anterior={ant.entrou} maiorEhBom />
           </div>
         </div>
-        <div className="min-w-0 border-r border-pauta p-3.5">
+        <div className="min-w-0 border-r border-pauta p-2.5 min-[360px]:p-3.5">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-sage">Saiu</p>
-          <p className="mt-1 font-serif text-[clamp(0.72rem,3vw,0.82rem)] leading-tight tnum text-alerta">
+          <p className="mt-1 font-serif text-[clamp(0.58rem,2.7vw,0.82rem)] leading-tight tnum text-alerta">
             {formatBRL(atual.saiu)}
           </p>
           <div className="mt-1">
             <Delta atual={atual.saiu} anterior={ant.saiu} maiorEhBom={false} />
           </div>
         </div>
-        <div className="min-w-0 p-3.5">
+        <div className="min-w-0 p-2.5 min-[360px]:p-3.5">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-sage">Saldo</p>
-          <p className="mt-1 font-serif text-[clamp(0.72rem,3vw,0.82rem)] leading-tight tnum text-creme">
+          <p className="mt-1 font-serif text-[clamp(0.58rem,2.7vw,0.82rem)] leading-tight tnum text-creme">
             {formatBRL(atual.saldo)}
           </p>
           <div className="mt-1">

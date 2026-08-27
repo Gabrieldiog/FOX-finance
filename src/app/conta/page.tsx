@@ -17,7 +17,7 @@ export default async function Conta() {
       <header className="flex items-center justify-between border-b border-pauta pb-4">
         <Link
           href="/"
-          className="font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:text-creme"
+          className="-m-2 inline-flex min-h-11 items-center p-2 font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:text-creme"
         >
           ← Voltar
         </Link>
@@ -58,7 +58,7 @@ export default async function Conta() {
       <ExcluirConta />
 
       <p className="mt-auto text-center font-mono text-[0.7rem] uppercase tracking-[0.12em] text-sage">
-        <Link href="/privacidade" className="underline transition hover:text-creme">
+        <Link href="/privacidade" className="-m-2 inline-flex min-h-11 items-center p-2 underline transition hover:text-creme">
           Política de privacidade
         </Link>
       </p>

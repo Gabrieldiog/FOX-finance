@@ -99,7 +99,7 @@ export function GerirMetas({ categorias, metas }: { categorias: Cat[]; metas: Me
                     onClick={() => remover(m.categoryId)}
                     disabled={removendo === m.categoryId}
                     aria-label={`Remover meta de ${m.name}`}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg leading-none text-sage transition hover:text-alerta disabled:opacity-50"
+                    className="-my-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg leading-none text-sage transition hover:text-alerta disabled:opacity-50"
                   >
                     ×
                   </button>
@@ -132,7 +132,7 @@ export function GerirMetas({ categorias, metas }: { categorias: Cat[]; metas: Me
                 key={c.id}
                 type="button"
                 onClick={() => escolher(c.id)}
-                className={`flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition ${on ? "border-brilho bg-brilho/10 text-creme" : "border-pauta text-sage"}`}
+                className={`flex min-h-11 items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition ${on ? "border-brilho bg-brilho/10 text-creme" : "border-pauta text-sage"}`}
               >
                 <span
                   className="flex h-5 w-5 items-center justify-center rounded-full"
