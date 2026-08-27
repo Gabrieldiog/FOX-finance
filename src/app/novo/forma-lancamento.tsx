@@ -154,7 +154,7 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
   }
 
   const chipData = (on: boolean) =>
-    `flex-1 rounded-xl border py-2.5 text-center text-sm font-medium transition ${
+    `flex min-h-11 flex-1 items-center justify-center rounded-xl border text-center text-sm font-medium transition ${
       on ? "border-brilho bg-brilho/10 text-creme" : "border-pauta text-sage"
     }`;
 
@@ -163,7 +163,7 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
       <div className="flex items-center justify-between gap-2">
         <Link
           href="/"
-          className="font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:text-creme"
+          className="-m-2 inline-flex min-h-11 items-center p-2 font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:text-creme"
         >
           Cancelar
         </Link>
@@ -171,14 +171,14 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
           <button
             type="button"
             onClick={() => trocarTipo("expense")}
-            className={`rounded-full px-4 py-1.5 transition ${!ganho ? "bg-alerta text-feltro" : "text-sage"}`}
+            className={`flex min-h-11 items-center rounded-full px-4 transition ${!ganho ? "bg-alerta text-feltro" : "text-sage"}`}
           >
             Gasto
           </button>
           <button
             type="button"
             onClick={() => trocarTipo("income")}
-            className={`rounded-full px-4 py-1.5 transition ${ganho ? "bg-brilho text-feltro" : "text-sage"}`}
+            className={`flex min-h-11 items-center rounded-full px-4 transition ${ganho ? "bg-brilho text-feltro" : "text-sage"}`}
           >
             Ganho
           </button>
@@ -252,7 +252,7 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
               key={c.id}
               type="button"
               onClick={() => setCategoryId(ativa ? null : c.id)}
-              className={`flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition ${ativa ? "border-brilho bg-brilho/10 text-creme" : "border-pauta text-sage"}`}
+              className={`flex min-h-11 items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition ${ativa ? "border-brilho bg-brilho/10 text-creme" : "border-pauta text-sage"}`}
             >
               <span
                 className="flex h-5 w-5 items-center justify-center rounded-full"
@@ -267,7 +267,7 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
         <button
           type="button"
           onClick={() => setCriandoCat(true)}
-          className="flex items-center gap-1.5 rounded-full border border-dashed border-pauta px-3.5 py-2 text-sm font-medium text-sage transition hover:border-brilho hover:text-brilho"
+          className="flex min-h-11 items-center gap-1.5 rounded-full border border-dashed border-pauta px-3.5 py-2 text-sm font-medium text-sage transition hover:border-brilho hover:text-brilho"
         >
           <IconeCategoria nome="plus" className="h-4 w-4" />
           Nova
@@ -363,7 +363,7 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
                 key={f.id}
                 type="button"
                 onClick={() => setPaymentMethod(on ? null : f.id)}
-                className={`flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition ${on ? "border-brilho bg-brilho/10 text-creme" : "border-pauta text-sage"}`}
+                className={`flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition ${on ? "border-brilho bg-brilho/10 text-creme" : "border-pauta text-sage"}`}
               >
                 <IconeCategoria nome={f.icon} className="h-4 w-4" />
                 {f.label}

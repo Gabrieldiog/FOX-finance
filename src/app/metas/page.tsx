@@ -39,7 +39,7 @@ export default async function Metas() {
       <header className="flex items-center justify-between border-b border-pauta pb-4">
         <Link
           href="/"
-          className="font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:text-creme"
+          className="-m-2 inline-flex min-h-11 items-center p-2 font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:text-creme"
         >
           ← Voltar
         </Link>

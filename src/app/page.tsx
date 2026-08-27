@@ -54,10 +54,10 @@ export default async function Home({
           </span>
         </span>
         <div className="flex items-center gap-4 font-mono text-xs uppercase tracking-[0.14em] text-sage">
-          <Link href="/estatisticas" className="transition hover:text-creme">
+          <Link href="/estatisticas" className="-m-2 inline-flex min-h-11 items-center p-2 transition hover:text-creme">
             Análise
           </Link>
-          <Link href="/conta" className="transition hover:text-creme">
+          <Link href="/conta" className="-m-2 inline-flex min-h-11 items-center p-2 transition hover:text-creme">
             Conta
           </Link>
           <SairBotao />
@@ -67,13 +67,13 @@ export default async function Home({
       <div className="flex rounded-full border border-pauta bg-feltro-alto p-1 font-mono text-xs uppercase tracking-[0.12em]">
         <Link
           href="/?periodo=semana"
-          className={`flex-1 rounded-full py-2 text-center transition ${periodo === "semana" ? "bg-brilho text-feltro" : "text-sage"}`}
+          className={`flex min-h-11 flex-1 items-center justify-center rounded-full text-center transition ${periodo === "semana" ? "bg-brilho text-feltro" : "text-sage"}`}
         >
           Semana
         </Link>
         <Link
           href="/?periodo=mes"
-          className={`flex-1 rounded-full py-2 text-center transition ${periodo === "mes" ? "bg-brilho text-feltro" : "text-sage"}`}
+          className={`flex min-h-11 flex-1 items-center justify-center rounded-full text-center transition ${periodo === "mes" ? "bg-brilho text-feltro" : "text-sage"}`}
         >
           Mês
         </Link>
@@ -87,7 +87,7 @@ export default async function Home({
           </p>
           <NumeroDinheiro
             cents={Math.abs(r.saldo)}
-            className={`mt-2 block font-serif text-[2.75rem] font-semibold leading-none tnum ${sobrou ? "text-brilho" : "text-alerta"}`}
+            className={`mt-2 block font-serif text-[clamp(1.75rem,9vw,2.75rem)] font-semibold leading-none tnum ${sobrou ? "text-brilho" : "text-alerta"}`}
           />
           <p className="mt-3 text-sm text-sage">
             {sobrou ? "No verde — fechou no azul." : "No vermelho neste período."}
@@ -97,21 +97,21 @@ export default async function Home({
 
       {/* Entrou / Saiu / Saldo, divididos por pauta fina. */}
       <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-pauta bg-feltro-alto">
-        <div className="min-w-0 border-r border-pauta p-3.5">
+        <div className="min-w-0 border-r border-pauta p-2.5 min-[360px]:p-3.5">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-sage">Entrou</p>
-          <p className="mt-1 font-serif text-[clamp(0.72rem,3vw,0.82rem)] leading-tight tnum text-brilho">
+          <p className="mt-1 font-serif text-[clamp(0.58rem,2.7vw,0.82rem)] leading-tight tnum text-brilho">
             {formatBRL(r.entrou)}
           </p>
         </div>
-        <div className="min-w-0 border-r border-pauta p-3.5">
+        <div className="min-w-0 border-r border-pauta p-2.5 min-[360px]:p-3.5">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-sage">Saiu</p>
-          <p className="mt-1 font-serif text-[clamp(0.72rem,3vw,0.82rem)] leading-tight tnum text-alerta">
+          <p className="mt-1 font-serif text-[clamp(0.58rem,2.7vw,0.82rem)] leading-tight tnum text-alerta">
             {formatBRL(r.saiu)}
           </p>
         </div>
-        <div className="min-w-0 p-3.5">
+        <div className="min-w-0 p-2.5 min-[360px]:p-3.5">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-sage">Saldo</p>
-          <p className="mt-1 font-serif text-[clamp(0.72rem,3vw,0.82rem)] leading-tight tnum text-creme">
+          <p className="mt-1 font-serif text-[clamp(0.58rem,2.7vw,0.82rem)] leading-tight tnum text-creme">
             {formatBRL(r.saldo)}
           </p>
         </div>
@@ -169,7 +169,7 @@ export default async function Home({
             </p>
             <Link
               href="/lancamentos"
-              className="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-brilho transition hover:opacity-80"
+              className="-m-2 inline-flex min-h-11 items-center p-2 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-brilho transition hover:opacity-80"
             >
               Ver tudo →
             </Link>

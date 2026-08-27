@@ -84,7 +84,7 @@ export function GerirRecorrencias({ recorrencias }: { recorrencias: RecorrenciaV
               type="button"
               onClick={() => alternar(r.id, r.active)}
               disabled={ocupado === r.id}
-              className="shrink-0 font-mono text-[0.6rem] uppercase tracking-[0.1em] text-sage transition hover:text-creme disabled:opacity-50"
+              className="-my-2 flex min-h-11 shrink-0 items-center px-2 py-2 font-mono text-[0.6rem] uppercase tracking-[0.1em] text-sage transition hover:text-creme disabled:opacity-50"
             >
               {r.active ? "pausar" : "retomar"}
             </button>
@@ -93,7 +93,7 @@ export function GerirRecorrencias({ recorrencias }: { recorrencias: RecorrenciaV
               onClick={() => apagar(r.id)}
               disabled={ocupado === r.id}
               aria-label={`Apagar recorrência ${nome}`}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg leading-none text-sage transition hover:text-alerta disabled:opacity-50"
+              className="-my-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg leading-none text-sage transition hover:text-alerta disabled:opacity-50"
             >
               ×
             </button>
