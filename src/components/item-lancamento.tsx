@@ -38,6 +38,12 @@ export function ItemLancamento({ t }: { t: LancamentoLista }) {
         {entrou ? "+" : "−"}
         {formatBRL(t.amountCents)}
       </span>
+      {/* O sinal de "isto abre". Sem ele a linha parece extrato de banco, e
+          extrato ninguém tenta clicar — foi por isso que uma usuária de verdade
+          não achou como corrigir um lançamento errado. */}
+      <span aria-hidden className="shrink-0 font-serif text-base leading-none text-sage/60">
+        ›
+      </span>
     </Link>
   );
 }

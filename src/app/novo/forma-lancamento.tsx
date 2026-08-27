@@ -11,7 +11,7 @@ import {
   excluirLancamento,
 } from "@/lib/actions";
 import { FORMAS_PAGAMENTO } from "@/lib/categorias";
-import { IconeCategoria } from "@/components/icone-categoria";
+import { IconeCategoria, IconeLixeira } from "@/components/icone-categoria";
 import { NovaCategoria, type Categoria } from "@/components/nova-categoria";
 
 type Cat = { id: string; name: string; type: string; icon: string; color: string };
@@ -52,6 +52,9 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
   const [diaDoMes, setDiaDoMes] = useState(1);
   const [salvando, setSalvando] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
+  // Apagar é irreversível pro usuário (não há "desfazer" na tela), então a
+  // lixeira só arma a pergunta — quem apaga é o "Sim, apagar".
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [cats, setCats] = useState<Cat[]>(categorias);
   const [criandoCat, setCriandoCat] = useState(false);
@@ -153,7 +156,7 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col gap-6 bg-feltro px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] font-grotesk text-creme [padding-top:calc(env(safe-area-inset-top)+1.5rem)]">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <Link
           href="/"
           className="font-mono text-xs uppercase tracking-[0.14em] text-sage transition hover:text-creme"
@@ -176,7 +179,52 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
             Ganho
           </button>
         </div>
+        {/* Apagar mora aqui em cima, visível de cara. Antes era um texto pálido
+            no fim da página, e quem lançou errado simplesmente não achava.
+            Na tela de criar não há o que apagar, mas o espaço fica reservado —
+            senão o par Gasto/Ganho pula de lugar entre criar e editar. */}
+        {editando ? (
+          <button
+            type="button"
+            onClick={() => setConfirmandoExclusao(true)}
+            aria-label="Apagar este lançamento"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-pauta text-sage transition hover:border-alerta hover:text-alerta active:scale-95"
+          >
+            <IconeLixeira className="h-[18px] w-[18px]" />
+          </button>
+        ) : (
+          <span aria-hidden className="h-9 w-9 shrink-0" />
+        )}
       </div>
+
+      {confirmandoExclusao && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-alerta/40 bg-feltro-alto p-4">
+          <p className="text-sm">
+            Apagar este lançamento? Ele sai do seu resumo e das suas contas.
+          </p>
+          {/* O erro tem que aparecer AQUI, ao lado do botão que falhou: lá
+              embaixo, fora da vista, ela apertaria de novo achando que travou. */}
+          {erro && <p className="text-sm font-medium text-alerta">{erro}</p>}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmandoExclusao(false)}
+              disabled={excluindo}
+              className="h-11 flex-1 rounded-full border border-pauta text-sm text-sage transition active:scale-[.98] disabled:opacity-60"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={excluir}
+              disabled={excluindo}
+              className="h-11 flex-1 rounded-full bg-alerta text-sm font-medium text-feltro transition active:scale-[.98] disabled:opacity-60"
+            >
+              {excluindo ? "Apagando…" : "Sim, apagar"}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="py-4 text-center">
         <p className="mb-1 font-mono text-[0.7rem] uppercase tracking-[0.16em] text-sage">
@@ -329,7 +377,9 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
         className="h-13 rounded-xl border border-pauta bg-feltro-alto px-4 text-creme outline-none transition placeholder:text-sage focus:border-brilho"
       />
 
-      {erro && <p className="text-sm font-medium text-alerta">{erro}</p>}
+      {erro && !confirmandoExclusao && (
+        <p className="text-sm font-medium text-alerta">{erro}</p>
+      )}
 
       <div
         className="mt-auto flex flex-col gap-3"
@@ -343,16 +393,6 @@ export function FormaLancamento({ categorias, inicial }: { categorias: Cat[]; in
         >
           {salvando ? "Salvando…" : recorrente ? "Criar recorrência" : "Salvar"}
         </button>
-        {editando && (
-          <button
-            type="button"
-            onClick={excluir}
-            disabled={salvando || excluindo}
-            className="h-11 rounded-full text-sm font-medium text-alerta transition active:scale-[.98] disabled:opacity-60"
-          >
-            {excluindo ? "Excluindo…" : "Excluir lançamento"}
-          </button>
-        )}
       </div>
 
       {criandoCat && (
