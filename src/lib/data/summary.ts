@@ -2,8 +2,7 @@ import "server-only";
 import { and, desc, eq, gte, isNull, lt, ne, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { category, transaction } from "@/db/schema";
-
-export type Periodo = "semana" | "mes";
+import type { Periodo } from "@/lib/periodo";
 
 export type Resumo = {
   entrou: number;
@@ -16,6 +15,7 @@ export async function resumoDoPeriodo(sessionUserId: string, periodo: Periodo): 
   const unit = periodo === "semana" ? "week" : "month";
   // Início do período no fuso de São Paulo (não do calendário UTC).
   const inicio = sql`date_trunc(${unit}, now() at time zone 'America/Sao_Paulo') at time zone 'America/Sao_Paulo'`;
+  const desde = periodo === "total" ? undefined : gte(transaction.occurredAt, inicio);
 
   // Transferência fica fora do "entrou/saiu": é dinheiro andando entre contas próprias.
   const [totais] = await db
@@ -29,7 +29,7 @@ export async function resumoDoPeriodo(sessionUserId: string, periodo: Periodo): 
         eq(transaction.userId, sessionUserId),
         isNull(transaction.deletedAt),
         ne(transaction.type, "transfer"),
-        gte(transaction.occurredAt, inicio),
+        desde,
       ),
     );
 
@@ -47,7 +47,7 @@ export async function resumoDoPeriodo(sessionUserId: string, periodo: Periodo): 
         eq(transaction.userId, sessionUserId),
         isNull(transaction.deletedAt),
         eq(transaction.type, "expense"),
-        gte(transaction.occurredAt, inicio),
+        desde,
       ),
     )
     .groupBy(category.id, category.name, category.icon, category.color)

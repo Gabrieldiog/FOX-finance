@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { resumoDoPeriodo, type Periodo } from "@/lib/data/summary";
+import { resumoDoPeriodo } from "@/lib/data/summary";
+import { COOKIE_PERIODO, lerPeriodo, type Periodo } from "@/lib/periodo";
 import { listRecentTransactions } from "@/lib/data/transactions";
 import { materializarRecorrencias } from "@/lib/data/recorrencias";
 import { getMetas, janelaDoMes, movimentoDoMes } from "@/lib/data/metas-mes";
@@ -16,6 +17,15 @@ import { ItemLancamento } from "@/components/item-lancamento";
 import { ListaCategorias } from "@/components/lista-categorias";
 import { Aterrissar } from "@/components/aterrissar";
 import { LandingV2 } from "@/components/landing-v2";
+import { SeletorPeriodo } from "@/components/seletor-periodo";
+
+const QUANDO: Record<Periodo, string> = { semana: "esta semana", mes: "este mês", total: "no total" };
+
+const FRASE: Record<Periodo, { sobrou: string; faltou: string }> = {
+  semana: { sobrou: "Isso é o que sobrou pra você nesta semana.", faltou: "Você gastou mais do que entrou nesta semana." },
+  mes: { sobrou: "Isso é o que sobrou pra você neste mês.", faltou: "Você gastou mais do que entrou neste mês." },
+  total: { sobrou: "Isso é o que sobrou de tudo que você lançou.", faltou: "Você gastou mais do que entrou, somando tudo." },
+};
 
 export default async function Home({
   searchParams,
@@ -32,7 +42,7 @@ export default async function Home({
   await materializarRecorrencias(session.user.id);
 
   const sp = await searchParams;
-  const periodo: Periodo = sp.periodo === "semana" ? "semana" : "mes";
+  const periodo = lerPeriodo(sp.periodo, (await cookies()).get(COOKIE_PERIODO)?.value);
   // Em paralelo: são leituras independentes, e com o pipelining ligado (ver o
   // comentário do prepare em src/db/index.ts) as duas viajam numa ida só.
   // materializarRecorrencias fica FORA do Promise.all de propósito — ele
@@ -49,7 +59,7 @@ export default async function Home({
   const av = avaliarMetas(metas, { ...mov, ...janelaDoMes(hoje.ano, hoje.mes, hoje) });
   const sobrou = r.saldo >= 0;
   const vazio = r.entrou === 0 && r.saiu === 0 && ultimos.length === 0;
-  const quando = periodo === "semana" ? "esta semana" : "este mês";
+  const quando = QUANDO[periodo];
 
   const grupos = agruparPorDia(ultimos);
 
@@ -73,20 +83,7 @@ export default async function Home({
         </div>
       </header>
 
-      <div className="flex rounded-full border border-pauta bg-feltro-alto p-1 font-mono text-xs uppercase tracking-[0.12em]">
-        <Link
-          href="/?periodo=semana"
-          className={`flex min-h-11 flex-1 items-center justify-center rounded-full text-center transition ${periodo === "semana" ? "bg-brilho text-feltro" : "text-sage"}`}
-        >
-          Semana
-        </Link>
-        <Link
-          href="/?periodo=mes"
-          className={`flex min-h-11 flex-1 items-center justify-center rounded-full text-center transition ${periodo === "mes" ? "bg-brilho text-feltro" : "text-sage"}`}
-        >
-          Mês
-        </Link>
-      </div>
+      <SeletorPeriodo atual={periodo} />
 
       {/* Saldo do período — o número-herói, sem gradiente (isso é cara de template). */}
       <Aterrissar>
@@ -98,15 +95,7 @@ export default async function Home({
             cents={Math.abs(r.saldo)}
             className={`mt-2 block font-serif text-[clamp(1.75rem,9vw,2.75rem)] font-semibold leading-none tnum ${sobrou ? "text-brilho" : "text-alerta"}`}
           />
-          <p className="mt-3 text-sm text-sage">
-            {sobrou
-              ? periodo === "semana"
-                ? "Isso é o que sobrou pra você nesta semana."
-                : "Isso é o que sobrou pra você neste mês."
-              : periodo === "semana"
-                ? "Você gastou mais do que entrou nesta semana."
-                : "Você gastou mais do que entrou neste mês."}
-          </p>
+          <p className="mt-3 text-sm text-sage">{sobrou ? FRASE[periodo].sobrou : FRASE[periodo].faltou}</p>
 
           {/* A frase da meta mora AQUI, colada no número que a pessoa veio ver.
               Dentro de /metas ela só seria lida por quem já foi procurar — e aí
