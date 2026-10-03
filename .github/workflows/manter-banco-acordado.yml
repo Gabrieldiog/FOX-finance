@@ -1,12 +1,13 @@
 name: manter o banco acordado
 
-# O Supabase no plano free PAUSA o projeto depois de 7 dias sem nenhuma conexão.
+# O Supabase no plano free PAUSA o projeto que passa 7 dias com pouco uso do banco.
 # Quando isso acontece o app inteiro cai: entrar, criar conta e qualquer tela que
 # leia dado devolvem 500 — sem aviso nenhum. Foi exatamente o que aconteceu em
 # agosto/2026.
 #
-# Este job toca o banco de 2 em 2 dias (o /api/health faz um `select 1` de
-# verdade), o que basta pra o projeto nunca chegar nos 7 dias de ócio.
+# Este job toca o banco 4 vezes por dia (o /api/health faz um `select 1` de
+# verdade). De 2 em 2 dias não bastou: o projeto pausou de novo no início de
+# outubro/2026, e a doc do Supabase fala em "algumas requisições por dia".
 #
 # Ele é também o alarme: o health responde 503 quando o Postgres não atende,
 # então o job fica vermelho e o GitHub manda e-mail — em vez de você descobrir
@@ -18,7 +19,7 @@ name: manter o banco acordado
 
 on:
   schedule:
-    - cron: "0 12 */2 * *" # a cada 2 dias, meio-dia UTC (9h em São Paulo)
+    - cron: "0 */6 * * *" # de 6 em 6 horas
   workflow_dispatch: # botão "Run workflow", pra pingar na hora
 
 permissions: {} # não precisa de acesso nenhum ao repositório
