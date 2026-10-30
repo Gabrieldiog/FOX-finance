@@ -28,9 +28,15 @@ function codigoDoErro(e: unknown): string {
 // devolvia 200 com `db: "down"` no corpo, e um health check que nunca falha não
 // dispara alarme nenhum: foi assim que o projeto ficou semanas fora do ar (banco
 // pausado por inatividade) sem ninguém saber, até alguém tentar criar conta.
+//
+// A checagem lê uma tabela DO APP (e não só `select 1`): em out/2026 o projeto
+// foi pausado por "pouca atividade" mesmo com o ping de 6 em 6 horas rodando —
+// a última transação real era de 6 dias antes. Um `select 1` aparentemente não
+// conta como uso; uma leitura numa tabela de verdade se parece com uso real.
+// Só conta linhas: nenhum dado sai daqui.
 export async function GET() {
   try {
-    await db.execute(sql`select 1`);
+    await db.execute(sql`select count(*) from "transaction"`);
     return NextResponse.json({ ok: true, db: "up" });
   } catch (e) {
     return NextResponse.json({ ok: false, db: "down", erro: codigoDoErro(e) }, { status: 503 });

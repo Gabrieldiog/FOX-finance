@@ -5,9 +5,12 @@ name: manter o banco acordado
 # leia dado devolvem 500 — sem aviso nenhum. Foi exatamente o que aconteceu em
 # agosto/2026.
 #
-# Este job toca o banco 4 vezes por dia (o /api/health faz um `select 1` de
-# verdade). De 2 em 2 dias não bastou: o projeto pausou de novo no início de
-# outubro/2026, e a doc do Supabase fala em "algumas requisições por dia".
+# Este job toca o banco 8 vezes por dia (o /api/health lê a tabela de
+# transações de verdade). De 2 em 2 dias não bastou (pausou no início de
+# outubro/2026); 4 vezes por dia com `select 1` também não (pausou de novo em
+# 26/10/2026, 6 dias depois do último uso real). A doc do Supabase fala em
+# "algumas requisições de usuário por dia" sem dizer o que conta — por isso a
+# consulta agora é numa tabela do app, e mais vezes.
 #
 # Ele é também o alarme: o health responde 503 quando o Postgres não atende,
 # então o job fica vermelho e o GitHub manda e-mail — em vez de você descobrir
@@ -19,7 +22,7 @@ name: manter o banco acordado
 
 on:
   schedule:
-    - cron: "0 */6 * * *" # de 6 em 6 horas
+    - cron: "17 */3 * * *" # de 3 em 3 horas (minuto 17: fora do pico do :00)
   workflow_dispatch: # botão "Run workflow", pra pingar na hora
 
 permissions: {} # não precisa de acesso nenhum ao repositório
